@@ -24,8 +24,8 @@ bool Screen::initialize()
         "SDL Test App",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        800,
-        800,
+        1280,
+        960,
         SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
 
   if (!_window) {

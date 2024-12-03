@@ -15,7 +15,7 @@ struct Camera {
   WorldPosition world;
 
   // pixels per world unit
-  uint32_t pixels_per_unit = 8;
+  float pixels_per_unit = 8;
 
   inline float viewPortWidthUnits () { return screen_width_px / pixels_per_unit; }
   inline float viewPortHeightUnits () { return screen_height_px / pixels_per_unit; }
@@ -55,10 +55,10 @@ struct Camera {
   }
 
   void zoomIn() {
-    pixels_per_unit *= 2;
+    pixels_per_unit *= 1.5;
   }
 
   void zoomOut() {
-    pixels_per_unit /= 2;
+    pixels_per_unit /= 1.5;
   }
 };

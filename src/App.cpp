@@ -1,9 +1,11 @@
 #include "App.h"
+
 #include <chrono>
 #include <cmath>
 #include <format>
 
 #include <SDL2/SDL_ttf.h>
+
 #include "cmdline.h"
 
 /******************************************************************************
@@ -29,7 +31,8 @@ bool App::initialize()
     // failed to create window/renderer
     return false;
   }
-  _player.pos = {1, 1};
+
+  _player.pos = {4.5, 5};
   _camera = Camera();
   _camera.world = {0, 0};
   _camera.screen_height_px = _screen.screenHeight;
@@ -60,6 +63,12 @@ bool App::initialize()
     this_anim.sheet_step_size_x_px = 32;
     this_anim.sheet_step_size_y_px = 0;
     this_anim.delay_ms = 100;
+  }
+
+  _map = Map(_screen.getRenderer());
+  if (!_map.load("resources/water-tile-green.png") )
+  {
+    return false;
   }
 
   return true;
@@ -238,8 +247,9 @@ int App::exec()
       player_sz_px.h
     };
 
-    SDL_SetRenderDrawColor(_screen.getRenderer(), 83, 132, 172, 255);
+    SDL_SetRenderDrawColor(_screen.getRenderer(),255, 255, 255, 255);
     SDL_RenderClear(_screen.getRenderer());
+    _map.update(_camera);
 
     SDL_RenderCopyEx(
       _screen.getRenderer(), _player.texture.get(),

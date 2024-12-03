@@ -9,7 +9,7 @@ struct Player {
   WorldPosition pos = { 0, 0 };
 
   // width and height of player, in world units
-  WorldSize size = { 4.f, 4.f };
+  WorldSize size = { 5.f, 5.f };
 
   // sprite sheet sourcing, need to move to a class
   SDL_Rect src = { 0, 0, 32, 32 };

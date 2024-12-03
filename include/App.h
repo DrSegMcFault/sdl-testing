@@ -6,6 +6,7 @@
 #include "Screen.h"
 #include "Texture.h"
 #include "Camera.h"
+#include "Map.h"
 
 class App
 {
@@ -15,6 +16,7 @@ private:
     StateExit
   };
 
+  Map _map;
   Screen _screen;
   Camera _camera;
   AppState _app_state = AppState::StatePlay;

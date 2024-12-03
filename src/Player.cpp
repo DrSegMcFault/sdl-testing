@@ -11,14 +11,16 @@ void Player::update(uint32_t delta_t_ms, WorldPosition mouse)
   auto center_y = pos.y + size.h / 2;
 
   float angle_direction = atan2f(mouse.y - center_y, mouse.x - center_x);
+  float other = -atan2f(mouse.y - center_y, mouse.x - center_x);
+
   float angle_dir_deg = (angle_direction * 180) / M_PI;
 
   updateVisualRotation(angle_dir_deg, center_x, center_y, mouse);
 
-  vel_x = speed_units_per_sec * (delta_t_ms / 1000.f) * cosf(angle_direction);
-  vel_y = speed_units_per_sec * (delta_t_ms / 1000.f) * sinf(angle_direction);
+  vel_x = speed_units_per_sec * (delta_t_ms / 1000.f) * cosf(other);
+  vel_y = speed_units_per_sec * (delta_t_ms / 1000.f) * sinf(other);
 
-  pos.x += vel_x * delta_t_ms;
+  pos.x -= vel_x * delta_t_ms;
   pos.y += vel_y * delta_t_ms;
 
   if (animations.size()) {
