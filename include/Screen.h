@@ -11,8 +11,8 @@ private:
   SDL_Renderer* _renderer;
 
 public:
-  uint32_t screenWidth = 800;
-  uint32_t screenHeight = 800;
+  uint32_t screenWidth = 1280;
+  uint32_t screenHeight = 960;
 
   Screen();
   ~Screen();

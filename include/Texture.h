@@ -1,4 +1,5 @@
 #pragma once
+
 #include <SDL.h>
 #include <SDL_image.h>
 #include <memory>
@@ -8,7 +9,7 @@ class Texture {
 private:
   std::shared_ptr<SDL_Texture> _txture;
 
-public: 
+public:
   Texture() = default;
   Texture(SDL_Renderer* renderer, const char* file) {
     if (auto surface = IMG_Load(file)) {

@@ -4,8 +4,6 @@
 #include <cmath>
 #include <format>
 
-#include <SDL2/SDL_ttf.h>
-
 #include "cmdline.h"
 
 /******************************************************************************
@@ -26,15 +24,16 @@ App::App()
 bool App::initialize()
 {
   TTF_Init();
+  _font = TTF_OpenFont("resources/Roboto-Medium.ttf", 24);
 
   if (!_screen.initialize()) {
     // failed to create window/renderer
     return false;
   }
 
-  _player.pos = {4.5, 5};
+  _player.pos = { 106.0, 49.0 };
   _camera = Camera();
-  _camera.world = {0, 0};
+  _camera.world = { 0, 0 };
   _camera.screen_height_px = _screen.screenHeight;
   _camera.screen_width_px = _screen.screenWidth;
 
@@ -66,12 +65,62 @@ bool App::initialize()
   }
 
   _map = Map(_screen.getRenderer());
-  if (!_map.load("resources/water-tile-green.png") )
-  {
+  if (!_map.load("resources/water-tile-green.png")) {
     return false;
   }
 
+  mainRoutine = std::bind(&App::gameLoop, this, std::placeholders::_1);
+
   return true;
+}
+
+/******************************************************************************
+ *
+ * Method: initialize()
+ *
+ *****************************************************************************/
+void App::gameLoop(uint32_t delta_t_ms)
+{
+  int mouse_pos_x = 0;
+  int mouse_pos_y = 0;
+
+  WorldPosition mouse_world = { 0, 0 };
+  // update the camera
+  SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
+  mouse_world = _camera.toWorld({mouse_pos_x, mouse_pos_y});
+
+  _player.update(delta_t_ms, mouse_world);
+  _camera.centerOn(_player.pos, _player.size);
+
+  PixelSize player_sz_px = _camera.toPixelSize(_player.size);
+
+  SDL_Rect d = {
+    static_cast<int>(_camera.screen_width_px / 2) - (player_sz_px.w / 2),
+    static_cast<int>(_camera.screen_height_px / 2) - (player_sz_px.h / 2),
+    player_sz_px.w,
+    player_sz_px.h
+  };
+
+  SDL_SetRenderDrawColor(_screen.getRenderer(),255, 255, 255, 255);
+  SDL_RenderClear(_screen.getRenderer());
+  _map.update(_camera);
+
+  SDL_RenderCopyEx(
+    _screen.getRenderer(), _player.texture.get(),
+    &_player.src, &d,
+    _player.visual_rotation, nullptr,
+    _player.anim_dir);
+
+  displayText(0, 0, "Player world xy: {},{} mousewrld pos: {},{}", 
+    round(_player.pos.x), round(_player.pos.y), mouse_world.x, mouse_world.y);
+
+  displayText(0, 40, "Player velx, vely: {},{}", 
+    round(_player.vel_x), round(_player.vel_y));
+
+  displayText(0, 80, "Camera pos: {}, {}", _camera.world.x, _camera.world.y);
+  displayText(0, 120, "Camera pixels_per_unit: {}", _camera.pixels_per_unit);
+
+  displayText(_camera.screen_width_px - 250, 0, "Player speed: {}", _player.speed_units_per_sec);
 }
 
 /******************************************************************************
@@ -231,41 +280,7 @@ int App::exec()
       handleInput(ev);
     }
 
-    // update the camera
-    SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
-    mouse_world = _camera.toWorld({mouse_pos_x, mouse_pos_y});
-
-    _player.update(delta_t_msec, mouse_world);
-    _camera.centerOn(_player.pos, _player.size);
-
-    PixelSize player_sz_px = _camera.toPixelSize(_player.size);
-
-    SDL_Rect d = {
-      static_cast<int>(_camera.screen_width_px / 2) - (player_sz_px.w / 2),
-      static_cast<int>(_camera.screen_height_px / 2) - (player_sz_px.h / 2),
-      player_sz_px.w,
-      player_sz_px.h
-    };
-
-    SDL_SetRenderDrawColor(_screen.getRenderer(),255, 255, 255, 255);
-    SDL_RenderClear(_screen.getRenderer());
-    _map.update(_camera);
-
-    SDL_RenderCopyEx(
-      _screen.getRenderer(), _player.texture.get(),
-      &_player.src, &d,
-      _player.visual_rotation, nullptr,
-      _player.anim_dir);
-
-    instantText(0, 0, "Player world xy: {},{} mousewrld pos: {},{}", 
-      round(_player.pos.x), round(_player.pos.y), mouse_world.x, mouse_world.y);
-
-    instantText(0, 40, "Player velx, vely: {},{}", 
-      round(_player.vel_x), round(_player.vel_y));
-    instantText(0, 80, "Camera pos: {}, {}", _camera.world.x, _camera.world.y);
-    instantText(0, 120, "Camera pixels_per_unit: {}", _camera.pixels_per_unit);
-
-    instantText(_camera.screen_width_px - 250, 0, "Player speed: {}", _player.speed_units_per_sec);
+    mainRoutine(delta_t_msec);
 
     SDL_RenderPresent(_screen.getRenderer());
     if (delta_t_msec < msec_per_frame) {

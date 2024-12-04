@@ -41,11 +41,11 @@ struct Player {
   uint32_t active_anim = 0;
 
   void increaseSpeed() {
-    speed_units_per_sec = std::clamp(speed_units_per_sec + 0.5f, 0.f, MAX_SPEED);
+    speed_units_per_sec = std::clamp(speed_units_per_sec + 1.5f, -1.5f, MAX_SPEED);
   }
 
   void decreaseSpeed() {
-    speed_units_per_sec = std::clamp(speed_units_per_sec - 0.5f, 0.f, MAX_SPEED);
+    speed_units_per_sec = std::clamp(speed_units_per_sec - 1.5f, -1.5f, MAX_SPEED);
   }
 
   /*
