@@ -17,7 +17,7 @@ struct WorldPosition {
   unit_type y;
 
   WorldPosition() = default;
-  WorldPosition(float x, float y ) : x(x), y(y) {}
+  WorldPosition(unit_type x, unit_type y) : x(x), y(y) {}
 };
 
 struct WorldSize {

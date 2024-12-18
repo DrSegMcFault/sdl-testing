@@ -17,7 +17,13 @@ Screen::Screen()
  *****************************************************************************/
 bool Screen::initialize() 
 {
-  SDL_Init(SDL_INIT_VIDEO);
+  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    return false;
+  }
+
+  if (TTF_Init() < 0) {
+    return false;
+  }
 
   _window =
       SDL_CreateWindow(
@@ -40,20 +46,12 @@ bool Screen::initialize()
     return false;
   }
 
+  _font = TTF_OpenFont("resources/Roboto-Medium.ttf", 24);
+  if (!_font) {
+    return false;
+  }
+
   return true;
-}
-
-/******************************************************************************
- *
- * Method: render()
- *
- *****************************************************************************/
-void Screen::render()
-{
-  SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-  SDL_RenderClear(_renderer);
-
-  SDL_RenderPresent(_renderer);
 }
 
 /******************************************************************************
@@ -63,6 +61,9 @@ void Screen::render()
  *****************************************************************************/
 Screen::~Screen()
 {
+  if (_font) {
+    TTF_CloseFont(_font);
+  }
   if (_renderer) {
     SDL_DestroyRenderer(_renderer);
   }

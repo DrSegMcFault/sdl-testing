@@ -20,15 +20,15 @@ struct Camera {
   inline float viewPortWidthUnits () { return screen_width_px / pixels_per_unit; }
   inline float viewPortHeightUnits () { return screen_height_px / pixels_per_unit; }
 
-  PixelPosition toPixel(WorldPosition pos) {
+  PixelPosition toPixel(WorldPosition pos) const {
     return {
       static_cast<int>((world.x - pos.x) * pixels_per_unit),
       static_cast<int>((world.y - pos.y) * pixels_per_unit)
     };
   }
 
-  SDL_Rect toRect(WorldPosition pos, WorldSize s) {
-    return { 
+  SDL_Rect toRect(WorldPosition pos, WorldSize s) const {
+    return {
       static_cast<int>((world.x - pos.x) * pixels_per_unit),
       static_cast<int>((world.y - pos.y) * pixels_per_unit),
       static_cast<int>(s.w * pixels_per_unit),
@@ -36,22 +36,22 @@ struct Camera {
     };
   }
 
-  PixelSize toPixelSize(WorldSize s) {
+  PixelSize toPixelSize(WorldSize s) const {
     return {
       static_cast<int>(s.w * pixels_per_unit),
       static_cast<int>(s.h * pixels_per_unit)
     };
   }
 
-  WorldPosition toWorld(PixelPosition pixel) {
+  WorldPosition toWorld(PixelPosition pixel) const {
     float worldX = (pixel.x / pixels_per_unit) + world.x;
     float worldY = (pixel.y / pixels_per_unit) + world.y;
     return { worldX, worldY };
   }
 
   void centerOn(WorldPosition p, WorldSize sz) {
-    world.x = (p.x + (sz.w / 2)) - viewPortWidthUnits() / 2;
-    world.y = (p.y + (sz.h / 2)) - viewPortHeightUnits() / 2;
+    world.x = (p.x + (sz.w / 2)) - (viewPortWidthUnits() / 2);
+    world.y = (p.y + (sz.h / 2)) - (viewPortHeightUnits() / 2);
   }
 
   void zoomIn() {

@@ -5,79 +5,58 @@
  * Method: Player::update()
  *
  *****************************************************************************/
-void Player::update(uint32_t delta_t_ms, WorldPosition mouse) 
+void Player::update(uint32_t delta_t_ms, WorldPosition mouse)
 {
   auto center_x = pos.x + size.w / 2;
   auto center_y = pos.y + size.h / 2;
 
-  float angle_direction = atan2f(mouse.y - center_y, mouse.x - center_x);
+  float angle_mouse_center_rad = atan2f(mouse.y - center_y, mouse.x - center_x);
+  float angle_mouse_center_deg = (angle_mouse_center_rad * 180) / M_PI;
 
-  float angle_dir_deg = (angle_direction * 180) / M_PI;
+  heading_deg = angle_mouse_center_deg;
 
-  updateVisualRotation(angle_dir_deg, center_x, center_y, mouse);
+  if (angle_mouse_center_deg > -45 && angle_mouse_center_deg < 45) {
+    // direction = Direction::Right;
+    animator.active_animation = AnimationType::MOVING_EAST;
+  } 
+  else if (angle_mouse_center_deg <= -45 && angle_mouse_center_deg >= -135) {
+    // direction = Direction::Up;
+    animator.active_animation = AnimationType::MOVING_NORTH;
+  }
+   else if (angle_mouse_center_deg >= 45 && angle_mouse_center_deg <= 135) {
+    // direction = Direction::Down;
+    animator.active_animation = AnimationType::MOVING_SOUTH;
+  } else {
+    // direction = Direction::Left;
+    animator.active_animation = AnimationType::MOVING_WEST;
+  }
 
-  vel_x = speed_units_per_sec * (delta_t_ms / 1000.f) * cosf(-angle_direction);
-  vel_y = speed_units_per_sec * (delta_t_ms / 1000.f) * sinf(-angle_direction);
+  vel_x = speed_units_per_sec * (delta_t_ms / 1000.f) * cosf(-angle_mouse_center_rad);
+  vel_y = speed_units_per_sec * (delta_t_ms / 1000.f) * sinf(-angle_mouse_center_rad);
 
   pos.x -= vel_x * delta_t_ms;
   pos.y += vel_y * delta_t_ms;
 
-  if (animations.size()) {
-    auto& active = animations[active_anim];
-    texture = active.texture;
-    src.x = src.w * static_cast<int>((SDL_GetTicks64() / active.delay_ms) % active.frame_count);
+  if (is_animated) {
+    animator.update(sprite, angle_mouse_center_deg);
   }
 }
 
 /******************************************************************************
  *
- * Method: Player::updateVisualRotation()
+ * Method: Player::draw()
  *
  *****************************************************************************/
-void Player::updateVisualRotation(
-  const double& mouse_angle_deg,
-  const int& center_x, const int& center_y,
-  WorldPosition mouse)
+void Player::draw(Screen& screen, Camera& cam)
 {
-  // this is horseshit code, but i want it to work right now.
-  // trying to see where the sprite is actually looking, given where the mouse is at
-  // then calculate how much we need to rotate the sprite so that it looks like the sprite
-  // is looking at the mouse
-  // Determine shifted cardinal direction (shifted by 45 degrees)
+  PixelSize size_pixels = cam.toPixelSize(size);
 
-  if (mouse_angle_deg > -45 && mouse_angle_deg < 45) {
-    // direction = Direction::Right;
-    active_anim = 1;
-    anim_dir = SDL_RendererFlip::SDL_FLIP_NONE;
-    eff_x = pos.x + size.w;
-    eff_y = pos.y + size.h / 2;
+  SDL_Rect destination_rect = {
+    cam.screen_width_px / 2 - size_pixels.w / 2,
+    cam.screen_height_px / 2 - size_pixels.h / 2,
+    size_pixels.w,
+    size_pixels.h
+  };
 
-  } else if (mouse_angle_deg <= -45 && mouse_angle_deg >= -135) {
-    // direction = Direction::Up;
-    active_anim = 2;
-    anim_dir = SDL_RendererFlip::SDL_FLIP_VERTICAL;
-    eff_x = pos.x + size.w / 2;
-    eff_y = pos.y;
-  }
-   else if (mouse_angle_deg >= 45 && mouse_angle_deg <= 135) {
-    // direction = Direction::Down;
-    active_anim = 2;
-    anim_dir = SDL_RendererFlip::SDL_FLIP_NONE;
-    eff_x = pos.x + size.w / 2;
-    eff_y = pos.y + size.h;
-  } else {
-    // direction = Direction::Left;
-    anim_dir = SDL_RendererFlip::SDL_FLIP_HORIZONTAL;
-    active_anim = 1;
-    eff_x = pos.x;
-    eff_y = pos.y + size.h / 2;
-  }
-
-  visual_rotation = 360 - (-atan2f(
-    (eff_x - center_x) * (mouse.y - center_y) - (eff_y - center_y) * (mouse.x - center_x),
-    (eff_x - center_x) * (mouse.x - center_x) + (eff_y - center_y) * (mouse.y - center_y)) * 180 / M_PI);
-
-  if (speed_units_per_sec == 0 && active_anim == 1) {
-    active_anim = 0;
-  }
+  screen.copyout(sprite, &destination_rect);
 }

@@ -23,51 +23,79 @@ App::App()
  *****************************************************************************/
 bool App::initialize()
 {
-  TTF_Init();
-  _font = TTF_OpenFont("resources/Roboto-Medium.ttf", 24);
-
   if (!_screen.initialize()) {
     // failed to create window/renderer
     return false;
   }
 
-  _player.pos = { 106.0, 49.0 };
   _camera = Camera();
   _camera.world = { 0, 0 };
   _camera.screen_height_px = _screen.screenHeight;
   _camera.screen_width_px = _screen.screenWidth;
 
+  _player.pos = { 106.0, 49.0 };
+  _player.is_animated = true;
+
   {
-    auto& this_anim = _player.animations.emplace_back();
-    this_anim.texture = Texture(_screen.getRenderer(), "resources/musky-idle-anim.png");
-    this_anim.frame_count = 3;
-    this_anim.sheet_step_size_x_px = 32;
-    this_anim.sheet_step_size_y_px = 0;
-    this_anim.delay_ms = 150;
+    auto& this_anim = _player.animator.animations[AnimationType::IDLE];
+    this_anim = 
+      Animation(
+        _screen.makeTexture("resources/musky-idle-anim.png"),
+        3,
+        150,
+        0);
   }
 
   {
-    auto& this_anim = _player.animations.emplace_back();
-    this_anim.texture = Texture(_screen.getRenderer(), "resources/musky-swim-anim.png");
-    this_anim.frame_count = 6;
-    this_anim.sheet_step_size_x_px = 32;
-    this_anim.sheet_step_size_y_px = 0;
-    this_anim.delay_ms = 100;
+    auto& this_anim = _player.animator.animations[AnimationType::MOVING_EAST];
+    this_anim = 
+      Animation(
+        _screen.makeTexture("resources/musky-swim-anim.png"),
+        6,
+        100,
+        0);
   }
 
   {
-    auto& this_anim = _player.animations.emplace_back();
-    this_anim.texture = Texture(_screen.getRenderer(), "resources/musky-swim-vertical.png");
-    this_anim.frame_count = 6;
-    this_anim.sheet_step_size_x_px = 32;
-    this_anim.sheet_step_size_y_px = 0;
-    this_anim.delay_ms = 100;
+    auto& this_anim = _player.animator.animations[AnimationType::MOVING_WEST];
+    this_anim = 
+      Animation(
+        Sprite(
+          _screen.makeTexture("resources/musky-swim-anim.png"),
+          SDL_RendererFlip::SDL_FLIP_HORIZONTAL,
+          180), // TODO: not sure about the rotation
+        6,
+        100,
+        0);
   }
 
-  _map = Map(_screen.getRenderer());
-  if (!_map.load("resources/water-tile-green.png")) {
-    return false;
+  {
+    auto& this_anim = _player.animator.animations[AnimationType::MOVING_NORTH];
+    this_anim =
+      Animation(
+        _screen.makeTexture("resources/musky-swim-vertical.png"),
+        6,
+        100,
+        0);
   }
+  {
+    auto& this_anim = _player.animator.animations[AnimationType::MOVING_SOUTH];
+    this_anim = 
+      Animation(
+        Sprite(
+          _screen.makeTexture("resources/musky-swim-vertical.png"),
+          SDL_RendererFlip::SDL_FLIP_VERTICAL,
+          90), // TODO: double check the angular offset
+        6,
+        100,
+        0);
+  }
+
+  _map = 
+    Map(
+      Sprite(_screen.makeTexture("resources/water-tile-green.png")),
+      32, 32,
+      500);
 
   mainRoutine = std::bind(&App::gameLoop, this, std::placeholders::_1);
 
@@ -76,51 +104,34 @@ bool App::initialize()
 
 /******************************************************************************
  *
- * Method: initialize()
+ * Method: gameLoop()
  *
  *****************************************************************************/
 void App::gameLoop(uint32_t delta_t_ms)
 {
+  // draw the base white background
+  _screen.clear();
+
   int mouse_pos_x = 0;
   int mouse_pos_y = 0;
 
-  WorldPosition mouse_world = { 0, 0 };
-  // update the camera
+  // find where the mouse is in the world space
   SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
-  mouse_world = _camera.toWorld({mouse_pos_x, mouse_pos_y});
+  WorldPosition mouse_world = _camera.toWorld({mouse_pos_x, mouse_pos_y});
 
   _player.update(delta_t_ms, mouse_world);
   _camera.centerOn(_player.pos, _player.size);
 
-  PixelSize player_sz_px = _camera.toPixelSize(_player.size);
+  _map.draw(_screen, _camera);
+  _player.draw(_screen, _camera);
 
-  SDL_Rect d = {
-    static_cast<int>(_camera.screen_width_px / 2) - (player_sz_px.w / 2),
-    static_cast<int>(_camera.screen_height_px / 2) - (player_sz_px.h / 2),
-    player_sz_px.w,
-    player_sz_px.h
-  };
-
-  SDL_SetRenderDrawColor(_screen.getRenderer(),255, 255, 255, 255);
-  SDL_RenderClear(_screen.getRenderer());
-  _map.update(_camera);
-
-  SDL_RenderCopyEx(
-    _screen.getRenderer(), _player.texture.get(),
-    &_player.src, &d,
-    _player.visual_rotation, nullptr,
-    _player.anim_dir);
-
-  displayText(0, 0, "Player world xy: {},{} mousewrld pos: {},{}", 
+  _screen.enqueueText(0, 0, "Player world xy: {},{} mousewrld pos: {},{}", 
     round(_player.pos.x), round(_player.pos.y), mouse_world.x, mouse_world.y);
-
-  displayText(0, 40, "Player velx, vely: {},{}", 
+  _screen.enqueueText(0, 40, "Player velx, vely: {},{}", 
     round(_player.vel_x), round(_player.vel_y));
-
-  displayText(0, 80, "Camera pos: {}, {}", _camera.world.x, _camera.world.y);
-  displayText(0, 120, "Camera pixels_per_unit: {}", _camera.pixels_per_unit);
-
-  displayText(_camera.screen_width_px - 250, 0, "Player speed: {}", _player.speed_units_per_sec);
+  _screen.enqueueText(0, 80,  "Camera pos: {}, {}", _camera.world.x, _camera.world.y);
+  _screen.enqueueText(0, 120, "Camera pixels_per_unit: {}", _camera.pixels_per_unit);
+  _screen.enqueueText(_camera.screen_width_px - 250, 0, "Player speed: {}", _player.speed_units_per_sec);
 }
 
 /******************************************************************************
@@ -243,21 +254,6 @@ int App::exec()
     return 1;
   }
 
-  TTF_Font* font = TTF_OpenFont("resources/Roboto-Medium.ttf", 24);
-
-  auto instantText = [&]<typename... Args>(int x, int y, auto format, Args&&... args) {
-    auto str = std::vformat(format, std::make_format_args(args...));
-    SDL_Surface* surfaceMessage =
-      TTF_RenderText_Solid(font, str.data(), {255,255,255});
-
-    SDL_Texture* Message = SDL_CreateTextureFromSurface(_screen.getRenderer(), surfaceMessage);
-
-    SDL_Rect msg_rect = {x, y, 250, 35};
-    SDL_RenderCopy(_screen.getRenderer(), Message, NULL, &msg_rect);
-    SDL_FreeSurface(surfaceMessage);
-    SDL_DestroyTexture(Message);
-  };
-
   SDL_Event ev;
   const uint32_t fps_max = cmdline::max_frame_rate;
   const uint32_t msec_per_frame = (1 / fps_max);
@@ -267,8 +263,6 @@ int App::exec()
 
   uint32_t delta_t_msec = 0;
 
-  int mouse_pos_x = 0;
-  int mouse_pos_y = 0;
   WorldPosition mouse_world = { 0, 0 };
 
   while (_app_state != AppState::StateExit) {
@@ -280,15 +274,14 @@ int App::exec()
       handleInput(ev);
     }
 
-    mainRoutine(delta_t_msec);
+    gameLoop(delta_t_msec);
 
-    SDL_RenderPresent(_screen.getRenderer());
+    _screen.draw();
+
     if (delta_t_msec < msec_per_frame) {
       SDL_Delay(msec_per_frame - delta_t_msec);
     }
   }
-
-  TTF_CloseFont(font);
 
   return 0;
 }
