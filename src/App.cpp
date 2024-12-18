@@ -36,68 +36,59 @@ bool App::initialize()
   _player.pos = { 106.0, 49.0 };
   _player.is_animated = true;
 
-  {
-    auto& this_anim = _player.animator.animations[AnimationType::IDLE];
-    this_anim = 
-      Animation(
-        _screen.makeTexture("resources/musky-idle-anim.png"),
-        3,
-        150,
-        0);
-  }
+  _player.animator.add(
+    Direction::EAST,
+    _screen.makeTexture("resources/musky-swim-anim.png"),
+    6,
+    100
+  );
 
-  {
-    auto& this_anim = _player.animator.animations[AnimationType::MOVING_EAST];
-    this_anim = 
-      Animation(
-        _screen.makeTexture("resources/musky-swim-anim.png"),
-        6,
-        100,
-        0);
-  }
+  _player.animator.add(
+    Direction::WEST,
+    Sprite(
+      _screen.makeTexture("resources/musky-swim-anim.png"),
+      SDL_RendererFlip::SDL_FLIP_HORIZONTAL,
+      180),
+    6,
+    100
+  );
 
-  {
-    auto& this_anim = _player.animator.animations[AnimationType::MOVING_WEST];
-    this_anim = 
-      Animation(
-        Sprite(
-          _screen.makeTexture("resources/musky-swim-anim.png"),
-          SDL_RendererFlip::SDL_FLIP_HORIZONTAL,
-          180), // TODO: not sure about the rotation
-        6,
-        100,
-        0);
-  }
+  _player.animator.add(
+    Direction::NORTH,
+    Sprite(
+      _screen.makeTexture("resources/musky-swim-vertical.png"),
+      SDL_RendererFlip::SDL_FLIP_NONE,
+      270),
+    6,
+    100
+  );
 
-  {
-    auto& this_anim = _player.animator.animations[AnimationType::MOVING_NORTH];
-    this_anim =
-      Animation(
-        _screen.makeTexture("resources/musky-swim-vertical.png"),
-        6,
-        100,
-        0);
-  }
-  {
-    auto& this_anim = _player.animator.animations[AnimationType::MOVING_SOUTH];
-    this_anim = 
-      Animation(
-        Sprite(
-          _screen.makeTexture("resources/musky-swim-vertical.png"),
-          SDL_RendererFlip::SDL_FLIP_VERTICAL,
-          90), // TODO: double check the angular offset
-        6,
-        100,
-        0);
-  }
+  _player.animator.add(
+    Direction::NORTH,
+    Sprite(
+      _screen.makeTexture("resources/musky-swim-vertical.png"),
+      SDL_RendererFlip::SDL_FLIP_NONE,
+      270),
+    6,
+    100
+  );
 
-  _map = 
+  _player.animator.add(
+    Direction::SOUTH,
+    Sprite(
+      _screen.makeTexture("resources/musky-swim-vertical.png"),
+      SDL_RendererFlip::SDL_FLIP_VERTICAL,
+      90),
+    6,
+    100
+  );
+
+  _map =
     Map(
       Sprite(_screen.makeTexture("resources/water-tile-green.png")),
       32, 32,
-      500);
-
-  mainRoutine = std::bind(&App::gameLoop, this, std::placeholders::_1);
+      25,
+      25);
 
   return true;
 }
@@ -125,13 +116,19 @@ void App::gameLoop(uint32_t delta_t_ms)
   _map.draw(_screen, _camera);
   _player.draw(_screen, _camera);
 
-  _screen.enqueueText(0, 0, "Player world xy: {},{} mousewrld pos: {},{}", 
-    round(_player.pos.x), round(_player.pos.y), mouse_world.x, mouse_world.y);
-  _screen.enqueueText(0, 40, "Player velx, vely: {},{}", 
-    round(_player.vel_x), round(_player.vel_y));
-  _screen.enqueueText(0, 80,  "Camera pos: {}, {}", _camera.world.x, _camera.world.y);
-  _screen.enqueueText(0, 120, "Camera pixels_per_unit: {}", _camera.pixels_per_unit);
-  _screen.enqueueText(_camera.screen_width_px - 250, 0, "Player speed: {}", _player.speed_units_per_sec);
+  if (cmdline::debug_camera) {
+    _screen.enqueueText(0, 80,  "Camera pos: {}, {}", _camera.world.x, _camera.world.y);
+    _screen.enqueueText(0, 120, "Camera pixels_per_unit: {}", _camera.pixels_per_unit);
+  }
+
+  if (cmdline::debug_player) {
+    _screen.enqueueText(0, 0, "Player world xy: {},{} mousewrld pos: {},{}", 
+      round(_player.pos.x), round(_player.pos.y), mouse_world.x, mouse_world.y);
+    _screen.enqueueText(0, 40, "Player velx, vely: {},{} ", 
+      round(_player.vel_x), round(_player.vel_y));
+    _screen.enqueueText(0, 160, "Player speed: {}        ", _player.speed_units_per_sec);
+    _screen.enqueueText(0, 200, "Player heading: {}      ", _player.heading_deg);
+  }
 }
 
 /******************************************************************************

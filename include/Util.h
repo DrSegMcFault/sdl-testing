@@ -43,3 +43,10 @@ struct PixelSize {
 struct PixelRect {
   int x,y,w,h;
 };
+
+enum Direction {
+  EAST,
+  WEST,
+  NORTH,
+  SOUTH
+};

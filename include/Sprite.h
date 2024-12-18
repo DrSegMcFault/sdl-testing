@@ -45,7 +45,7 @@ struct Sprite {
 
   // annoying, where is the sprite looking?
   /*
-               here for north south animations -90 deg
+               here for north south animations 270 deg
                |
                v
        x x x x x x x x x

@@ -1,5 +1,8 @@
 #include "Player.h"
 
+#include <numbers>
+#include <cmath>
+
 /******************************************************************************
  *
  * Method: Player::update()
@@ -10,35 +13,35 @@ void Player::update(uint32_t delta_t_ms, WorldPosition mouse)
   auto center_x = pos.x + size.w / 2;
   auto center_y = pos.y + size.h / 2;
 
-  float angle_mouse_center_rad = atan2f(mouse.y - center_y, mouse.x - center_x);
-  float angle_mouse_center_deg = (angle_mouse_center_rad * 180) / M_PI;
+  float angle_mouse_center_rad = std::atan2(mouse.y - center_y, mouse.x - center_x);
 
-  heading_deg = angle_mouse_center_deg;
+  auto norm = [](auto heading) {
+    if (heading < 0) {
+      return heading + 360;
+    }
+    return heading;
+  };
 
-  if (angle_mouse_center_deg > -45 && angle_mouse_center_deg < 45) {
-    // direction = Direction::Right;
-    animator.active_animation = AnimationType::MOVING_EAST;
-  } 
-  else if (angle_mouse_center_deg <= -45 && angle_mouse_center_deg >= -135) {
-    // direction = Direction::Up;
-    animator.active_animation = AnimationType::MOVING_NORTH;
-  }
-   else if (angle_mouse_center_deg >= 45 && angle_mouse_center_deg <= 135) {
-    // direction = Direction::Down;
-    animator.active_animation = AnimationType::MOVING_SOUTH;
+  heading_deg = norm(angle_mouse_center_rad * 180 / M_PI);
+
+  vel_x = speed_units_per_sec * std::cos(angle_mouse_center_rad);
+  vel_y = speed_units_per_sec * std::sin(angle_mouse_center_rad);
+
+  pos.x += vel_x * (delta_t_ms / 1000.f);
+  pos.y += vel_y * (delta_t_ms / 1000.f);
+
+  if (heading_deg > 45 && heading_deg <= 135) {
+    direction = Direction::SOUTH;
+  } else if (heading_deg > 135 && heading_deg <= 225) {
+    direction = Direction::WEST;
+  } else if (heading_deg > 225 && heading_deg <= 315) {
+    direction = Direction::NORTH;
   } else {
-    // direction = Direction::Left;
-    animator.active_animation = AnimationType::MOVING_WEST;
+    direction = Direction::EAST;
   }
-
-  vel_x = speed_units_per_sec * (delta_t_ms / 1000.f) * cosf(-angle_mouse_center_rad);
-  vel_y = speed_units_per_sec * (delta_t_ms / 1000.f) * sinf(-angle_mouse_center_rad);
-
-  pos.x -= vel_x * delta_t_ms;
-  pos.y += vel_y * delta_t_ms;
 
   if (is_animated) {
-    animator.update(sprite, angle_mouse_center_deg);
+    animator.update(sprite, direction, heading_deg);
   }
 }
 

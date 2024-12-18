@@ -5,25 +5,13 @@
 #include <SDL2/SDL.h>
 
 #include "Sprite.h"
-
-enum AnimationType {
-  IDLE,
-  MOVING_EAST,
-  MOVING_WEST,
-  MOVING_NORTH,
-  MOVING_SOUTH,
-  ATTACKING_EAST,
-  ATTACKING_WEST,
-  ATTACKING_NORTH,
-  ATTACKING_SOUTH
-};
+#include "Util.h"
 
 struct Animation {
   Animation() = default;
   Animation(Sprite sprite_sheet,
             uint32_t num_frames,
-            uint32_t delay,
-            double look_angle)
+            uint32_t delay)
     : sprite(sprite_sheet)
     , frame_count(num_frames)
     , delay_ms(delay)
@@ -61,7 +49,6 @@ struct Animation {
   // think of a reason to support staggered sheets
   uint32_t sheet_step_size_y_px = 0;
 
-
   void step() {
     // TODO: update this to be more extensible by taking into account 
     // the step size and frame width and height
@@ -71,12 +58,15 @@ struct Animation {
 
 struct AnimationController {
   std::array<Animation, 6> animations = {};
-  AnimationType active_animation = AnimationType::IDLE;
 
-  void update(Sprite& s, const float angle_mouse_center) {
-    auto& active = animations[active_animation];
+  void add(Direction d, Sprite s, uint32_t frame_count, uint32_t delayms) {
+    animations[d] = Animation(s, frame_count, delayms);
+  }
+
+  void update(Sprite& s, Direction player_direction, const float heading) {
+    auto& active = animations[player_direction];
     active.step();
     s = active.sprite;
-    s.rotation_deg = 360 - angle_mouse_center + active.sprite.rotational_offset;
+    s.rotation_deg = heading + active.sprite.rotational_offset;
   }
 };

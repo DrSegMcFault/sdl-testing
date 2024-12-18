@@ -3,6 +3,9 @@
 #include "Util.h"
 
 struct Camera {
+  static constexpr float ZOOM_MAX = 32.f;
+  static constexpr float ZOOM_MIN = 1.f;
+
   // actual pixel values
   int screen_width_px = 0;
   int screen_height_px = 0;
@@ -22,15 +25,15 @@ struct Camera {
 
   PixelPosition toPixel(WorldPosition pos) const {
     return {
-      static_cast<int>((world.x - pos.x) * pixels_per_unit),
-      static_cast<int>((world.y - pos.y) * pixels_per_unit)
+      static_cast<int>((pos.x - world.x) * pixels_per_unit),
+      static_cast<int>((pos.y - world.y) * pixels_per_unit)
     };
   }
 
   SDL_Rect toRect(WorldPosition pos, WorldSize s) const {
     return {
-      static_cast<int>((world.x - pos.x) * pixels_per_unit),
-      static_cast<int>((world.y - pos.y) * pixels_per_unit),
+      static_cast<int>((pos.x - world.x) * pixels_per_unit),
+      static_cast<int>((pos.y - world.y) * pixels_per_unit),
       static_cast<int>(s.w * pixels_per_unit),
       static_cast<int>(s.h * pixels_per_unit)
     };
@@ -55,10 +58,10 @@ struct Camera {
   }
 
   void zoomIn() {
-    pixels_per_unit *= 1.5;
+    pixels_per_unit = std::min(pixels_per_unit + 1.f, ZOOM_MAX);
   }
 
   void zoomOut() {
-    pixels_per_unit /= 1.5;
+    pixels_per_unit = std::max(pixels_per_unit - 1.0f, ZOOM_MIN);
   }
 };
