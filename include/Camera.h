@@ -3,8 +3,8 @@
 #include "Util.h"
 
 struct Camera {
-  static constexpr float ZOOM_MAX = 32.f;
-  static constexpr float ZOOM_MIN = 1.f;
+  static constexpr float ZOOM_MAX = 64.f;
+  static constexpr float ZOOM_MIN = 8.f;
 
   // actual pixel values
   int screen_width_px = 0;
@@ -18,7 +18,7 @@ struct Camera {
   WorldPosition world;
 
   // pixels per world unit
-  float pixels_per_unit = 8;
+  float pixels_per_unit = 16.f;
 
   inline float viewPortWidthUnits () { return screen_width_px / pixels_per_unit; }
   inline float viewPortHeightUnits () { return screen_height_px / pixels_per_unit; }
@@ -57,11 +57,11 @@ struct Camera {
     world.y = (p.y + (sz.h / 2)) - (viewPortHeightUnits() / 2);
   }
 
-  void zoomIn() {
-    pixels_per_unit = std::min(pixels_per_unit + 1.f, ZOOM_MAX);
+  void zoomIn(float amount = 1.f) {
+    pixels_per_unit = std::min(pixels_per_unit + amount, ZOOM_MAX);
   }
 
-  void zoomOut() {
-    pixels_per_unit = std::max(pixels_per_unit - 1.0f, ZOOM_MIN);
+  void zoomOut(float amount = 1.f) {
+    pixels_per_unit = std::max(pixels_per_unit - amount, ZOOM_MIN);
   }
 };

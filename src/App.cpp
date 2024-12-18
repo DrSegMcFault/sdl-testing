@@ -157,6 +157,15 @@ void App::handleInput(const SDL_Event& ev)
       _app_state = AppState::StateExit;
       break;
     }
+    case SDL_MOUSEWHEEL:
+    {
+      if (ev.wheel.y > 0) {
+        _camera.zoomIn();
+      } else if (ev.wheel.y < 0) {
+        _camera.zoomOut();
+      }
+      break;
+    }
     case SDL_KEYUP:
     {
       break;
