@@ -33,7 +33,7 @@ bool App::initialize()
   _camera.screen_height_px = _screen.screenHeight;
   _camera.screen_width_px = _screen.screenWidth;
 
-  _player.pos = { 106.0, 49.0 };
+  _player.pos = { 106.f, 49.f };
   _player.is_animated = true;
 
   _player.animator.add(
@@ -108,7 +108,7 @@ void App::gameLoop(uint32_t delta_t_ms)
 
   // find where the mouse is in the world space
   SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
-  WorldPosition mouse_world = _camera.toWorld({mouse_pos_x, mouse_pos_y});
+  WorldPosition mouse_world = _camera.toWorld({ mouse_pos_x, mouse_pos_y });
 
   _player.update(delta_t_ms, mouse_world);
   _camera.centerOn(_player.pos, _player.size);

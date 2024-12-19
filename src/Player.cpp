@@ -10,8 +10,8 @@
  *****************************************************************************/
 void Player::update(uint32_t delta_t_ms, WorldPosition mouse)
 {
-  auto center_x = pos.x + size.w / 2;
-  auto center_y = pos.y + size.h / 2;
+  auto center_x = pos.x + size.w / 2.f;
+  auto center_y = pos.y + size.h / 2.f;
 
   float angle_mouse_center_rad = std::atan2(mouse.y - center_y, mouse.x - center_x);
 
@@ -22,7 +22,12 @@ void Player::update(uint32_t delta_t_ms, WorldPosition mouse)
     return heading;
   };
 
-  heading_deg = norm(angle_mouse_center_rad * 180 / M_PI);
+  heading_deg = [](auto angle) {
+    if (angle < 0) {
+      return angle + 360;
+    }
+    return angle;
+  }(angle_mouse_center_rad * 180.f / std::numbers::pi_v<float>);
 
   vel_x = speed_units_per_sec * std::cos(angle_mouse_center_rad);
   vel_y = speed_units_per_sec * std::sin(angle_mouse_center_rad);

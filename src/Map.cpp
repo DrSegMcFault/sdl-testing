@@ -1,6 +1,7 @@
 #include "Map.h"
 #include <random>
 #include <cstdlib>
+#include <chrono>
 #include "Util.h"
 
 /******************************************************************************
@@ -22,10 +23,8 @@ Map::Map(
   _tileset.source.w = _tile_width_px;
   _tileset.source.h = _tile_height_px;
 
-  float posx = 0.f;
-  float posy = 0.f;
-
-  srand(SDL_GetTicks());
+  auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+  srand(static_cast<unsigned int>(now));
 
   for (auto i : range(_num_rows)) {
     for (auto j : range(_num_columns)) {
