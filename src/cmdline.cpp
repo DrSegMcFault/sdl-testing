@@ -15,6 +15,7 @@ void parseCommandLine(int argc, char *argv[])
   cli_global.add_flag("--debug-unit-grid,", cmdline::draw_unit_grid, "Debugging - always draw the unit grid on the screen");
   cli_global.add_flag("--debug-player",     cmdline::debug_player,   "Debugging - output player values to the screen");
   cli_global.add_flag("--debug-camera",     cmdline::debug_camera,   "Debugging - output camera values to the screen");
+  cli_global.add_flag("--debug-tiles",      cmdline::debug_tiles,    "Debugging - show tile stats on screen");
 
   try {
     cli_global.parse(argc, argv);

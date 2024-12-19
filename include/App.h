@@ -1,9 +1,6 @@
 #pragma once
 
-#include <functional>
-
-#include <SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL.h>
 
 #include "Player.h"
 #include "Screen.h"
@@ -29,7 +26,7 @@ private:
 
   bool initialize();
   void gameLoop(uint32_t delta_t_ms);
-  void handleInput(const SDL_Event& ev);
+  void processEvents(const SDL_Event& ev);
 
 public:
   App();

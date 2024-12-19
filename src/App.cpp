@@ -24,14 +24,14 @@ App::App()
 bool App::initialize()
 {
   if (!_screen.initialize()) {
-    // failed to create window/renderer
+    // failed to create window | renderer | font
     return false;
   }
 
   _camera = Camera();
   _camera.world = { 0, 0 };
-  _camera.screen_height_px = _screen.screenHeight;
-  _camera.screen_width_px = _screen.screenWidth;
+  _camera.screen_height_px = _screen.height();
+  _camera.screen_width_px = _screen.width();
 
   _player.pos = { 106.f, 49.f };
   _player.is_animated = true;
@@ -117,38 +117,41 @@ void App::gameLoop(uint32_t delta_t_ms)
   _player.draw(_screen, _camera);
 
   if (cmdline::debug_camera) {
-    _screen.enqueueText(0, 80,  "Camera pos: {}, {}", _camera.world.x, _camera.world.y);
-    _screen.enqueueText(0, 120, "Camera pixels_per_unit: {}", _camera.pixels_per_unit);
+    _screen.addText("Camera");
+    _screen.addText("      world x, y: {}, {}", round(_camera.world.x), round(_camera.world.y));
+    _screen.addText("      pixels_per_unit: {}", _camera.pixels_per_unit);
+    _screen.addTextln();
   }
 
   if (cmdline::debug_player) {
-    _screen.enqueueText(0, 0, "Player world xy: {},{} mousewrld pos: {},{}", 
-      round(_player.pos.x), round(_player.pos.y), mouse_world.x, mouse_world.y);
-    _screen.enqueueText(0, 40, "Player velx, vely: {},{} ", 
+    _screen.addText("Player");
+
+    _screen.addText("     world x, y: {}, {}", 
+      round(_player.pos.x), round(_player.pos.y));
+
+    _screen.addText("     velocity_x, velocity_y: {}, {} ", 
       round(_player.vel_x), round(_player.vel_y));
-    _screen.enqueueText(0, 160, "Player speed: {}        ", _player.speed_units_per_sec);
-    _screen.enqueueText(0, 200, "Player heading: {}      ", _player.heading_deg);
+
+    _screen.addText("     speed: {}", _player.speed_units_per_sec);
+    _screen.addText("     heading: {}", round(_player.heading_deg));
+    _screen.addTextln();
   }
+  _screen.draw();
 }
 
 /******************************************************************************
  *
- * Method: handleInput()
+ * Method: processEvents()
  *
  *****************************************************************************/
-void App::handleInput(const SDL_Event& ev)
+void App::processEvents(const SDL_Event& ev)
 {
   switch (ev.type) {
     case SDL_WINDOWEVENT:
     {
-      switch (ev.window.event) {
-        case SDL_WINDOWEVENT_RESIZED:
-        {
-          _camera.screen_width_px = ev.window.data1;
-          _camera.screen_height_px = ev.window.data2;
-          break;
-        }
-      }
+      _screen.onWindowEvent(ev.window);
+      _camera.screen_width_px = _screen.width();
+      _camera.screen_height_px = _screen.height();
       break;
     }
 
@@ -179,29 +182,10 @@ void App::handleInput(const SDL_Event& ev)
           _camera.zoomIn();
           break;
         }
+
         case SDLK_DOWN:
         {
           _camera.zoomOut();
-          break;
-        }
-        case SDLK_j:
-        {
-          // _camera.move({ -.5f, 0.f });
-          break;
-        }
-        case SDLK_k:
-        {
-          // _camera.move({ 0.f, -.5f });
-          break;
-        }
-        case SDLK_i:
-        {
-          // _camera.move({ 0.f, .5f });
-          break;
-        }
-        case SDLK_l:
-        {
-          // _camera.move({ .5f, 0.f });
           break;
         }
 
@@ -209,7 +193,9 @@ void App::handleInput(const SDL_Event& ev)
         {
           break;
         }
-        case SDLK_RIGHT: {
+
+        case SDLK_RIGHT: 
+        {
           break;
         }
 
@@ -277,12 +263,10 @@ int App::exec()
     prev_time_msec = current_time_msec;
 
     while (SDL_PollEvent(&ev)) {
-      handleInput(ev);
+      processEvents(ev);
     }
 
     gameLoop(delta_t_msec);
-
-    _screen.draw();
 
     if (delta_t_msec < msec_per_frame) {
       SDL_Delay(msec_per_frame - delta_t_msec);

@@ -10,6 +10,7 @@ namespace cmdline {
   inline bool draw_unit_grid = false;
   inline bool debug_player = false;
   inline bool debug_camera = false;
+  inline bool debug_tiles = false;
 }
 
 void parseCommandLine(int argc, char* argv[]);

@@ -2,7 +2,9 @@
 #include <random>
 #include <cstdlib>
 #include <chrono>
+
 #include "Util.h"
+#include "cmdline.h"
 
 /******************************************************************************
  *
@@ -44,16 +46,33 @@ Map::Map(
  *****************************************************************************/
 void Map::draw(Screen& screen, Camera& c)
 {
+  SDL_Rect camera_rect = { 0, 0, c.screen_width_px, c.screen_height_px };
   SDL_Rect dest;
+  SDL_Rect temp;
+  int visible_tiles = 0;
 
   for (const auto i : range(_num_tiles)) {
     auto& tile = _tiles[i];
     dest = c.toRect(tile.pos, tile.size);
+
+    // if this tile is not within the view of the 
+    // camera, dont render it
+    if (!SDL_IntersectRect(&dest, &camera_rect, &temp)) {
+      continue;
+    }
+    visible_tiles++;
 
     _tileset.source.x = tile.source.x;
     _tileset.rotation_deg = tile.angle;
     _tileset.flip = tile.flip;
 
     screen.copyout(_tileset, &dest);
+  }
+
+  if (cmdline::debug_tiles) {
+    screen.addText("Tiles", visible_tiles, _num_tiles);
+    screen.addText("      Visible: {}", visible_tiles);
+    screen.addText("      Total: {}", _num_tiles);
+    screen.addTextln();
   }
 }
