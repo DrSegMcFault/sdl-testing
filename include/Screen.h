@@ -71,7 +71,7 @@ public:
       return;
     }
 
-    SDL_Surface* surface = TTF_RenderText_Solid(_font, str.c_str(), { 255, 255, 255 });
+    SDL_Surface* surface = TTF_RenderText_Blended(_font, str.c_str(), { 255, 255, 255 });
     SDL_Texture* texture = SDL_CreateTextureFromSurface(_renderer, surface);
     SDL_FreeSurface(surface);
 

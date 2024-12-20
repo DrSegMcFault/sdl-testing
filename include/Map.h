@@ -32,7 +32,7 @@ struct Map {
 
   Map() = default;
   Map(Sprite tileset_, int tile_width, int tile_height, size_t map_columns, size_t map_rows);
-
+  
   // master tileset image
   Sprite _tileset;
 
@@ -43,6 +43,9 @@ struct Map {
   size_t _num_rows;
   size_t _num_columns;
   size_t _num_tiles;
+
+  WorldPosition _position;
+  WorldSize _size;
 
   std::vector<Tile> _tiles;
 

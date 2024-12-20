@@ -29,9 +29,9 @@ bool App::initialize()
   }
 
   _camera = Camera();
-  _camera.world = { 0, 0 };
-  _camera.screen_height_px = _screen.height();
-  _camera.screen_width_px = _screen.width();
+  _camera._world_pos = { 0, 0 };
+  _camera._screen_height_px = _screen.height();
+  _camera._screen_width_px = _screen.width();
 
   _player.pos = { 106.f, 49.f };
   _player.is_animated = true;
@@ -90,6 +90,8 @@ bool App::initialize()
       25,
       25);
 
+  _camera.bindTo(_map._position, _map._size);
+
   return true;
 }
 
@@ -118,8 +120,8 @@ void App::gameLoop(uint32_t delta_t_ms)
 
   if (cmdline::debug_camera) {
     _screen.addText("Camera");
-    _screen.addText("      world x, y: {}, {}", round(_camera.world.x), round(_camera.world.y));
-    _screen.addText("      pixels_per_unit: {}", _camera.pixels_per_unit);
+    _screen.addText("      world x, y: {}, {}", round(_camera._world_pos.x), round(_camera._world_pos.y));
+    _screen.addText("      pixels_per_unit: {}", _camera._pixels_per_unit);
     _screen.addTextln();
   }
 
@@ -150,8 +152,7 @@ void App::processEvents(const SDL_Event& ev)
     case SDL_WINDOWEVENT:
     {
       _screen.onWindowEvent(ev.window);
-      _camera.screen_width_px = _screen.width();
-      _camera.screen_height_px = _screen.height();
+      _camera.updateScreenSize(_screen.width(), _screen.height());
       break;
     }
 

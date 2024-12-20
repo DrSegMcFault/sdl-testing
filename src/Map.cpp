@@ -37,6 +37,12 @@ Map::Map(
           static_cast<SDL_RendererFlip>(rand() % 3));
     }
   }
+
+  _position = WorldPosition(0.f, 0.f);
+  _size = {
+    .w = Tile::size.w * _num_rows,
+    .h = Tile::size.h * _num_columns,
+  };
 }
 
 /******************************************************************************
@@ -46,7 +52,7 @@ Map::Map(
  *****************************************************************************/
 void Map::draw(Screen& screen, Camera& c)
 {
-  SDL_Rect camera_rect = { 0, 0, c.screen_width_px, c.screen_height_px };
+  SDL_Rect camera_rect = c.getRect();
   SDL_Rect dest;
   SDL_Rect temp;
   int visible_tiles = 0;

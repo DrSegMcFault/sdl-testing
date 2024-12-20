@@ -25,7 +25,7 @@ struct Player {
   // width and height of player, in world units
   WorldSize size = { 5.f, 5.f };
 
-  static constexpr float SPEED_MAX = 20.f;
+  static constexpr float SPEED_MAX = 30.f;
   static constexpr float SPEED_MIN = 0.f;
   float speed_units_per_sec = 0.f;
 
