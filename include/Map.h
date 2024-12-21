@@ -8,7 +8,6 @@
 #include "Camera.h"
 #include "Screen.h"
 
-
 struct Tile {
   static constexpr WorldSize size = { 15.f, 15.f };
   WorldPosition pos = { 0, 0 };
@@ -29,9 +28,10 @@ struct Tile {
 };
 
 struct Map {
-
   Map() = default;
-  Map(Sprite tileset_, int tile_width, int tile_height, size_t map_columns, size_t map_rows);
+  Map(Sprite tileset_,
+      int tile_width, int tile_height,
+      size_t map_columns, size_t map_rows);
   
   // master tileset image
   Sprite _tileset;

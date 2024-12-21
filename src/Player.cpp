@@ -3,6 +3,8 @@
 #include <numbers>
 #include <cmath>
 
+#include "cmdline.h"
+
 /******************************************************************************
  *
  * Method: Player::update()
@@ -10,43 +12,37 @@
  *****************************************************************************/
 void Player::update(uint32_t delta_t_ms, WorldPosition mouse)
 {
-  auto center_x = pos.x + size.w / 2.f;
-  auto center_y = pos.y + size.h / 2.f;
+  auto center_x = _pos.x + _size.w / 2.f;
+  auto center_y = _pos.y + _size.h / 2.f;
 
-  float angle_mouse_center_rad = std::atan2(mouse.y - center_y, mouse.x - center_x);
+  float angle_mouse_center_rad =
+    std::atan2(mouse.y - center_y, mouse.x - center_x);
 
-  auto norm = [](auto heading) {
-    if (heading < 0) {
-      return heading + 360;
-    }
-    return heading;
-  };
-
-  heading_deg = [](auto angle) {
+  _heading_deg = [](auto angle) {
     if (angle < 0) {
       return angle + 360;
     }
     return angle;
   }(angle_mouse_center_rad * 180.f / std::numbers::pi_v<float>);
 
-  vel_x = speed_units_per_sec * std::cos(angle_mouse_center_rad);
-  vel_y = speed_units_per_sec * std::sin(angle_mouse_center_rad);
+  _vel_x = _speed_units_per_sec * std::cos(angle_mouse_center_rad);
+  _vel_y = _speed_units_per_sec * std::sin(angle_mouse_center_rad);
 
-  pos.x += vel_x * (delta_t_ms / 1000.f);
-  pos.y += vel_y * (delta_t_ms / 1000.f);
+  _pos.x += _vel_x * (delta_t_ms / 1000.f);
+  _pos.y += _vel_y * (delta_t_ms / 1000.f);
 
-  if (heading_deg > 45 && heading_deg <= 135) {
-    direction = Direction::SOUTH;
-  } else if (heading_deg > 135 && heading_deg <= 225) {
-    direction = Direction::WEST;
-  } else if (heading_deg > 225 && heading_deg <= 315) {
-    direction = Direction::NORTH;
+  if (_heading_deg > 45 && _heading_deg <= 135) {
+    _direction = Direction::SOUTH;
+  } else if (_heading_deg > 135 && _heading_deg <= 225) {
+    _direction = Direction::WEST;
+  } else if (_heading_deg > 225 && _heading_deg <= 315) {
+    _direction = Direction::NORTH;
   } else {
-    direction = Direction::EAST;
+    _direction = Direction::EAST;
   }
 
-  if (is_animated) {
-    animator.update(sprite, direction, heading_deg);
+  if (_is_animated) {
+    _animator.update(_sprite, _direction, _heading_deg);
   }
 }
 
@@ -59,9 +55,23 @@ void Player::draw(Screen& screen, Camera& cam)
 {
   SDL_Rect junk;
   SDL_Rect camera_rect = cam.getRect();
-  SDL_Rect dest_rect = cam.toRect(pos, size);
+  SDL_Rect dest_rect = cam.toRect(_pos, _size);
 
   if (SDL_IntersectRect(&dest_rect, &camera_rect, &junk)) {
-    screen.copyout(sprite, &dest_rect);
+    screen.copyout(_sprite, &dest_rect);
+  }
+
+  if (cmdline::debug_player) {
+    screen.addText("Player");
+
+    screen.addText("     world x, y: {}, {}", 
+      round(_pos.x), round(_pos.y));
+
+    screen.addText("     velocity_x, velocity_y: {}, {} ", 
+      round(_vel_x), round(_vel_y));
+
+    screen.addText("     speed: {}", _speed_units_per_sec);
+    screen.addText("     heading: {}", round(_heading_deg));
+    screen.addTextln();
   }
 }

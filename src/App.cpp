@@ -33,17 +33,17 @@ bool App::initialize()
   _camera._screen_height_px = _screen.height();
   _camera._screen_width_px = _screen.width();
 
-  _player.pos = { 106.f, 49.f };
-  _player.is_animated = true;
+  _player._pos = { 106.f, 49.f };
+  _player._is_animated = true;
 
-  _player.animator.add(
+  _player._animator.add(
     Direction::EAST,
     _screen.makeTexture("resources/musky-swim-anim.png"),
     6,
     100
   );
 
-  _player.animator.add(
+  _player._animator.add(
     Direction::WEST,
     Sprite(
       _screen.makeTexture("resources/musky-swim-anim.png"),
@@ -53,7 +53,7 @@ bool App::initialize()
     100
   );
 
-  _player.animator.add(
+  _player._animator.add(
     Direction::NORTH,
     Sprite(
       _screen.makeTexture("resources/musky-swim-vertical.png"),
@@ -63,7 +63,7 @@ bool App::initialize()
     100
   );
 
-  _player.animator.add(
+  _player._animator.add(
     Direction::NORTH,
     Sprite(
       _screen.makeTexture("resources/musky-swim-vertical.png"),
@@ -73,7 +73,7 @@ bool App::initialize()
     100
   );
 
-  _player.animator.add(
+  _player._animator.add(
     Direction::SOUTH,
     Sprite(
       _screen.makeTexture("resources/musky-swim-vertical.png"),
@@ -113,7 +113,7 @@ void App::gameLoop(uint32_t delta_t_ms)
   WorldPosition mouse_world = _camera.toWorld({ mouse_pos_x, mouse_pos_y });
 
   _player.update(delta_t_ms, mouse_world);
-  _camera.centerOn(_player.pos, _player.size);
+  _camera.centerOn(_player._pos, _player._size);
 
   _map.draw(_screen, _camera);
   _player.draw(_screen, _camera);
@@ -125,19 +125,6 @@ void App::gameLoop(uint32_t delta_t_ms)
     _screen.addTextln();
   }
 
-  if (cmdline::debug_player) {
-    _screen.addText("Player");
-
-    _screen.addText("     world x, y: {}, {}", 
-      round(_player.pos.x), round(_player.pos.y));
-
-    _screen.addText("     velocity_x, velocity_y: {}, {} ", 
-      round(_player.vel_x), round(_player.vel_y));
-
-    _screen.addText("     speed: {}", _player.speed_units_per_sec);
-    _screen.addText("     heading: {}", round(_player.heading_deg));
-    _screen.addTextln();
-  }
   _screen.draw();
 }
 
