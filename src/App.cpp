@@ -33,6 +33,15 @@ bool App::initialize()
   _camera._screen_height_px = _screen.height();
   _camera._screen_width_px = _screen.width();
 
+  // only take up half the screen
+  _camera._view_height_factor = .5f;
+  _camera._view_width_factor = .5f;
+
+  // move the camera over by half the width of the window
+  _camera._view_offset_x_px = _camera._screen_width_px / 4;
+  _camera._view_offset_y_px = _camera._screen_height_px / 4;
+  _camera.updateScreenSize(_camera._screen_width_px, _camera._screen_height_px);
+
   _player._pos = { 106.f, 49.f };
   _player._is_animated = true;
 
@@ -114,6 +123,10 @@ void App::gameLoop(uint32_t delta_t_ms)
 
   _player.update(delta_t_ms, mouse_world);
   _camera.centerOn(_player._pos, _player._size);
+
+  auto r = _camera.getRect();
+  _screen.setDrawColor(0,255,0,255);
+  SDL_RenderFillRect(_screen._renderer, &r);
 
   _map.draw(_screen, _camera);
   _player.draw(_screen, _camera);

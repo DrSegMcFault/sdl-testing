@@ -23,7 +23,11 @@ struct Tile {
     , angle(angle)
     , flip(flip)
   {
-    source.x = rand() % 2;
+
+    // this value will be multiplied later by the pixel size of each tile.
+    // TODO: make it more clear thatthis is really just the index 
+    // in the tile set that this tile is referring to
+    source.x = rand() % 2; 
   }
 };
 

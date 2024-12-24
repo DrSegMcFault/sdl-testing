@@ -31,10 +31,18 @@ Map::Map(
   for (auto i : range(_num_rows)) {
     for (auto j : range(_num_columns)) {
       _tiles[i * _num_columns + j] =
+        // TODO: if i want to actually randomize these, i need to either have many more tiles
+        // that are already rotated, or handle the rotation fliping in the sampling stage of the
+        // sprite.
+        // SDL_FLip and angle make the draw() function appear to not function correctly
+        // Tile(
+        //   i * Tile::size.w, j * Tile::size.h,
+        //   (rand() % 4) * 90,
+        //   static_cast<SDL_RendererFlip>(rand() % 3));
         Tile(
           i * Tile::size.w, j * Tile::size.h,
-          (rand() % 4) * 90,
-          static_cast<SDL_RendererFlip>(rand() % 3));
+          0,
+          SDL_RendererFlip::SDL_FLIP_NONE);
     }
   }
 
@@ -54,7 +62,6 @@ void Map::draw(Screen& screen, Camera& c)
 {
   SDL_Rect camera_rect = c.getRect();
   SDL_Rect dest;
-  SDL_Rect temp;
   int visible_tiles = 0;
 
   for (const auto i : range(_num_tiles)) {
@@ -63,16 +70,57 @@ void Map::draw(Screen& screen, Camera& c)
 
     // if this tile is not within the view of the 
     // camera, dont render it
-    if (!SDL_IntersectRect(&dest, &camera_rect, &temp)) {
+    if (!SDL_HasIntersection(&dest, &camera_rect)) {
       continue;
     }
     visible_tiles++;
 
-    _tileset.source.x = tile.source.x;
+    _tileset.source.x = tile.source.x * _tile_width_px;
+    _tileset.source.y = 0;
     _tileset.rotation_deg = tile.angle;
     _tileset.flip = tile.flip;
 
-    screen.copyout(_tileset, &dest);
+    SDL_Rect intersect;
+    SDL_IntersectRect(&dest, &camera_rect, &intersect);
+    if (!SDL_RectEquals(&dest, &intersect))
+    {
+      // we need to source the sprite at the same ratio as intersect is to dest
+      // so that the view is propertly clipped
+
+      // if the destination rectangle for this tile is not
+      // entirely within the camera bounds
+      // what is intercecton as a percentage of dest?
+      // dest is guaranteed to be larger than intersection in at least one dimension
+      if (intersect.y < dest.x) {
+
+
+      }
+      float offset_percentage_x = float(float(intersect.w) / float(dest.w)) * 100.f;
+      float offset_percentage_y = float(float(intersect.h) / float(dest.h)) * 100.f;
+
+      auto offset_x = _tile_width_px - (_tile_width_px * (offset_percentage_x / 100));
+      auto offset_y = _tile_height_px - (_tile_height_px * (offset_percentage_y / 100));
+      _tileset.source.x += offset_x;
+      _tileset.source.y += offset_y;
+      _tileset.source.w = _tileset.source.w - offset_x;
+      _tileset.source.h = _tileset.source.h - offset_y;
+
+      screen.setDrawColor(0, 0, 0, 255);
+      SDL_Rect bg = {
+        dest.x -1,
+        dest.y - 1,
+        dest.w + 1,
+        dest.h + 1
+      };
+      SDL_RenderFillRect(screen._renderer, &bg);
+      screen.setDrawColor(0, 0, 255, 255);
+      SDL_RenderFillRect(screen._renderer, &dest);
+    }
+
+    screen.copyout(_tileset, &intersect);
+    // TODO: clean this up later
+    _tileset.source.w = _tile_width_px;
+    _tileset.source.h = _tile_height_px;
   }
 
   if (cmdline::debug_tiles) {

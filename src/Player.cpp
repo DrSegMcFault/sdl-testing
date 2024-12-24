@@ -53,11 +53,10 @@ void Player::update(uint32_t delta_t_ms, WorldPosition mouse)
  *****************************************************************************/
 void Player::draw(Screen& screen, Camera& cam)
 {
-  SDL_Rect junk;
   SDL_Rect camera_rect = cam.getRect();
   SDL_Rect dest_rect = cam.toRect(_pos, _size);
 
-  if (SDL_IntersectRect(&dest_rect, &camera_rect, &junk)) {
+  if (SDL_HasIntersection(&dest_rect, &camera_rect)) {
     screen.copyout(_sprite, &dest_rect);
   }
 
