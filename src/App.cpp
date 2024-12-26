@@ -34,13 +34,30 @@ bool App::initialize()
   _camera._screen_width_px = _screen.width();
 
   // only take up half the screen
-  _camera._view_height_factor = .5f;
-  _camera._view_width_factor = .5f;
+  _camera._view_height_factor = 1.f;
+  _camera._view_width_factor = 1.f;
 
   // move the camera over by half the width of the window
-  _camera._view_offset_x_px = _camera._screen_width_px / 4;
-  _camera._view_offset_y_px = _camera._screen_height_px / 4;
+  _camera._view_offset_x_px = 0;
+  _camera._view_offset_y_px = 0;
+
   _camera.updateScreenSize(_camera._screen_width_px, _camera._screen_height_px);
+
+  _camera_small = Camera();
+  _camera_small._world_pos = { 0, 0 };
+  _camera_small._screen_height_px = _screen.height();
+  _camera_small._screen_width_px = _screen.width();
+
+  // only take up half the screen
+  _camera_small._view_height_factor = .2f;
+  _camera_small._view_width_factor = .2f;
+
+  // move the camera over by half the width of the window
+  _camera_small._view_offset_x_px = _screen.width() * .8f;
+  _camera_small._view_offset_y_px = _screen.height() * .8f;
+  _camera_small._pixels_per_unit = 32.f;
+
+  _camera_small.updateScreenSize(_camera._screen_width_px, _camera._screen_height_px);
 
   _player._pos = { 106.f, 49.f };
   _player._is_animated = true;
@@ -123,13 +140,26 @@ void App::gameLoop(uint32_t delta_t_ms)
 
   _player.update(delta_t_ms, mouse_world);
   _camera.centerOn(_player._pos, _player._size);
-
-  auto r = _camera.getRect();
-  _screen.setDrawColor(0,255,0,255);
-  SDL_RenderFillRect(_screen._renderer, &r);
+  _camera_small.centerOn(_player._pos, _player._size);
 
   _map.draw(_screen, _camera);
+  auto r = _camera_small.getRect();
+  _screen.setDrawColor(0, 0, 0, 255);
+  
+   SDL_Rect bg = {
+    r.x - 1,
+    r.y - 1,
+    r.w + 1,
+    r.h + 1
+  };
+  SDL_RenderFillRect(_screen._renderer, &bg);
+  _screen.setDrawColor(255, 255, 255, 255);
+  SDL_RenderFillRect(_screen._renderer, &r);
+
+  _map.draw(_screen, _camera_small);
+
   _player.draw(_screen, _camera);
+  _player.draw(_screen, _camera_small);
 
   if (cmdline::debug_camera) {
     _screen.addText("Camera");

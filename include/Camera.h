@@ -5,27 +5,9 @@
 
 #include "Util.h"
 
-// there may be a need for the camera to take up only a portion
-// of the screen.
-// Currently, the camera's viewport is the entire screen, 
-// with no way to change or configure it.
-// I need to implement a way to have the camera be able
-// take up a specified amount of the screen.
-// this means that all things that are seen by the camera 
-// need to be drawn at an offset from the cameras position on screen
-
-// Step 1. What are the current assumptions in this class?
-//  a. The 'location' of the camera on the screen is always 0, 0
-//  Something in toRect() is fishy, 
-//      _pixels_per_unit is sus
-//      The x,y calculation specifially
-//      
-
-// Previous Assumption was that the _view_px = _screen_px
-// and that _view_offset = 0
-
 struct Camera {
-  static constexpr float ZOOM_MAX = 64.f;
+  static constexpr SDL_Rect empty_rect = { 0, 0, 0, 0 };
+  static constexpr float ZOOM_MAX = 40.f;
   static constexpr float ZOOM_MIN = 1.f;
 
   // window size in pixels, gets updated when the window is resized
@@ -56,14 +38,7 @@ struct Camera {
 
   // get the effective rect of this camera
   SDL_Rect getRect() const {
-    return {
-      _view_offset_x_px,
-      _view_offset_y_px,
-      _view_width_px,
-      _view_height_px
-    };
-
-    // return toRect(_world_pos, _world_size);
+    return toRect(_world_pos, _world_size);
   }
 
   void updateScreenSize(int x_px, int y_px) {
@@ -128,8 +103,8 @@ struct Camera {
 
     if (bounds) {
       // restrict the cameras position such that it's rect is fully contained within the bounds 
-      _world_pos.x = std::clamp(_world_pos.x, bounds->p.x, bounds->p.x + bounds->s.w - _world_size.w);
-      _world_pos.y = std::clamp(_world_pos.y, bounds->p.y, bounds->p.y + bounds->s.h - _world_size.h);
+      _world_pos.x = std::clamp(_world_pos.x, bounds->p.x, std::max(bounds->p.x + bounds->s.w - _world_size.w, 0.f));
+      _world_pos.y = std::clamp(_world_pos.y, bounds->p.y, std::max(bounds->p.y + bounds->s.h - _world_size.h, 0.f));
     }
   }
 

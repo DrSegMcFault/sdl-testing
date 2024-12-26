@@ -19,6 +19,7 @@ private:
   Map _map;
   Screen _screen;
   Camera _camera;
+  Camera _camera_small;
   AppState _app_state = AppState::StatePlay;
   Player _player;
 

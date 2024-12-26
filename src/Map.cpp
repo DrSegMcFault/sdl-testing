@@ -90,31 +90,39 @@ void Map::draw(Screen& screen, Camera& c)
       // if the destination rectangle for this tile is not
       // entirely within the camera bounds
       // what is intercecton as a percentage of dest?
-      // dest is guaranteed to be larger than intersection in at least one dimension
-      if (intersect.y < dest.x) {
-
-
-      }
+      // dest is guaranteed to be larger than intersection
       float offset_percentage_x = float(float(intersect.w) / float(dest.w)) * 100.f;
       float offset_percentage_y = float(float(intersect.h) / float(dest.h)) * 100.f;
 
-      auto offset_x = _tile_width_px - (_tile_width_px * (offset_percentage_x / 100));
-      auto offset_y = _tile_height_px - (_tile_height_px * (offset_percentage_y / 100));
-      _tileset.source.x += offset_x;
-      _tileset.source.y += offset_y;
+      auto offset_x = _tile_width_px - (_tile_width_px * (offset_percentage_x / 100.f));
+      auto offset_y = _tile_height_px - (_tile_height_px * (offset_percentage_y / 100.f));
+      if (intersect.x != dest.x) {
+        _tileset.source.x += offset_x;
+      }
+      if (intersect.y != dest.y) {
+        _tileset.source.y += offset_y;
+      }
+
       _tileset.source.w = _tileset.source.w - offset_x;
       _tileset.source.h = _tileset.source.h - offset_y;
 
-      screen.setDrawColor(0, 0, 0, 255);
-      SDL_Rect bg = {
-        dest.x -1,
-        dest.y - 1,
-        dest.w + 1,
-        dest.h + 1
-      };
-      SDL_RenderFillRect(screen._renderer, &bg);
-      screen.setDrawColor(0, 0, 255, 255);
-      SDL_RenderFillRect(screen._renderer, &dest);
+      if (cmdline::debug_camera && cmdline::debug_tiles) {
+        screen.setDrawColor(0, 0, 0, 255);
+        SDL_Rect bg = {
+          dest.x - 1,
+          dest.y - 1,
+          dest.w + 1,
+          dest.h + 1
+        };
+        SDL_RenderFillRect(screen._renderer, &bg);
+        screen.setDrawColor(0, 0, 255, 255);
+        SDL_RenderFillRect(screen._renderer, &dest);
+
+        if (intersect.x == dest.x && intersect.y == dest.y) {
+          screen.setDrawColor(0, 255, 255, 255);
+          SDL_RenderFillRect(screen._renderer, &dest);
+        }
+      }
     }
 
     screen.copyout(_tileset, &intersect);
