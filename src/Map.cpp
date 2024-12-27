@@ -56,8 +56,7 @@ void Map::draw(Screen& screen, Camera& c)
   SDL_Rect dest;
   int visible_tiles = 0;
 
-  for (const auto i : range(_num_tiles)) {
-    auto& tile = _tiles[i];
+  for (const auto& tile : _tiles) {
     dest = c.toRect(tile.pos, tile.size);
     if (SDL_RectEmpty(&dest)) {
       continue;
