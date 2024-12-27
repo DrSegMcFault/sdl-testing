@@ -11,23 +11,20 @@
 struct Tile {
   static constexpr WorldSize size = { 15.f, 15.f };
   WorldPosition pos = { 0, 0 };
-  // xy wh - the location within the tileset this tile is located
+
+  // the rectangle within the master tileset that is tile is referring to 
   SDL_Rect source = { 0, 0, 0, 0 };
   double angle = 0;
   SDL_RendererFlip flip;
 
   Tile() = default;
 
-  Tile(float x, float y, double angle, SDL_RendererFlip flip) 
+  Tile(float x, float y, SDL_Rect&& src, double angle, SDL_RendererFlip flip) 
     : pos(x,y)
+    , source(std::move(src))
     , angle(angle)
     , flip(flip)
   {
-
-    // this value will be multiplied later by the pixel size of each tile.
-    // TODO: make it more clear thatthis is really just the index 
-    // in the tile set that this tile is referring to
-    source.x = rand() % 2; 
   }
 };
 

@@ -33,6 +33,7 @@ Map::Map(
       _tiles[i * _num_columns + j] =
         Tile(
           i * Tile::size.w, j * Tile::size.h,
+          { rand() % (_tileset.texture.width / _tile_width_px), 0, _tile_width_px, _tile_height_px },
           (rand() % 4) * 90,
           static_cast<SDL_RendererFlip>(rand() % 3));
     }
@@ -67,8 +68,7 @@ void Map::draw(Screen& screen, Camera& c)
     }
     visible_tiles++;
 
-    _tileset.source.x = tile.source.x * _tile_width_px;
-    _tileset.source.y = 0;
+    _tileset.source = tile.source;
     _tileset.rotation_deg = tile.angle;
     _tileset.flip = tile.flip;
 

@@ -140,6 +140,13 @@ void App::gameLoop(uint32_t delta_t_ms)
   _map.draw(_screen, _camera);
   _player.draw(_screen, _camera);
 
+  if (cmdline::debug_camera) {
+    _screen.addText("Camera");
+    _screen.addText("      world x, y: {}, {}", round(_camera._world_pos.x), round(_camera._world_pos.y));
+    _screen.addText("      pixels_per_unit: {}", _camera._pixels_per_unit);
+    _screen.addTextln();
+  }
+
   // draw 'window' of smaller camera
   SDL_Rect cam2_rect = _camera_small.getRenderRect();
   _screen.filledRectBackground(&cam2_rect, { 0, 0, 0, 255 }, { 255, 255, 255, 255 });
@@ -148,13 +155,6 @@ void App::gameLoop(uint32_t delta_t_ms)
   _screen.setViewPort(&cam2_rect);
   _map.draw(_screen, _camera_small);
   _player.draw(_screen, _camera_small);
-
-  if (cmdline::debug_camera) {
-    _screen.addText("Camera");
-    _screen.addText("      world x, y: {}, {}", round(_camera._world_pos.x), round(_camera._world_pos.y));
-    _screen.addText("      pixels_per_unit: {}", _camera._pixels_per_unit);
-    _screen.addTextln();
-  }
 
   _screen.draw();
 }
