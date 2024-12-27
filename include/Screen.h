@@ -10,6 +10,7 @@
 class Screen {
 private:
   SDL_Window* _window;
+  SDL_Renderer* _renderer;
   TTF_Font* _font;
 
   // make a text controller class?
@@ -25,7 +26,6 @@ private:
 public:
   Screen();
   ~Screen();
-  SDL_Renderer* _renderer;
 
   bool initialize();
 
