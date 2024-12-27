@@ -32,6 +32,22 @@ bool App::initialize()
   _camera._world_pos = { 0, 0 };
   _camera._screen_height_px = _screen.height();
   _camera._screen_width_px = _screen.width();
+  _camera.updateScreenSize(_camera._screen_width_px, _camera._screen_height_px);
+
+  _camera_small = Camera();
+  _camera_small._world_pos = { 0, 0 };
+  _camera_small._screen_height_px = _screen.height();
+  _camera_small._screen_width_px = _screen.width();
+
+  // make the camera take up 20% of width and height 
+  _camera_small._view_height_factor = .2f;
+  _camera_small._view_width_factor = .2f;
+
+  // move the camera to the bottom right of the screen
+  _camera_small._view_offset_x_px = _screen.width() * .8f;
+  _camera_small._view_offset_y_px = _screen.height() * .8f;
+  _camera_small._pixels_per_unit = 32.f;
+  _camera_small.updateScreenSize(_camera._screen_width_px, _camera._screen_height_px);
 
   _player._pos = { 106.f, 49.f };
   _player._is_animated = true;
@@ -91,6 +107,7 @@ bool App::initialize()
       25);
 
   _camera.bindTo(_map._position, _map._size);
+  _camera_small.bindTo(_map._position, _map._size);
 
   return true;
 }
@@ -112,9 +129,13 @@ void App::gameLoop(uint32_t delta_t_ms)
   SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
   WorldPosition mouse_world = _camera.toWorld({ mouse_pos_x, mouse_pos_y });
 
+  // update states
   _player.update(delta_t_ms, mouse_world);
   _camera.centerOn(_player._pos, _player._size);
+  _camera_small.centerOn(_player._pos, _player._size);
 
+  // render main camera
+  _screen.setViewPort(_camera.getRenderRect());
   _map.draw(_screen, _camera);
   _player.draw(_screen, _camera);
 
@@ -124,6 +145,15 @@ void App::gameLoop(uint32_t delta_t_ms)
     _screen.addText("      pixels_per_unit: {}", _camera._pixels_per_unit);
     _screen.addTextln();
   }
+
+  // draw 'window' of smaller camera
+  const SDL_Rect* cam2_rect = _camera_small.getRenderRect();
+  _screen.filledRectBackground(cam2_rect, { 0, 0, 0, 255 }, { 255, 255, 255, 255 });
+
+  // render small camera
+  _screen.setViewPort(cam2_rect);
+  _map.draw(_screen, _camera_small);
+  _player.draw(_screen, _camera_small);
 
   _screen.draw();
 }
@@ -140,6 +170,7 @@ void App::processEvents(const SDL_Event& ev)
     {
       _screen.onWindowEvent(ev.window);
       _camera.updateScreenSize(_screen.width(), _screen.height());
+      _camera_small.updateScreenSize(_screen.width(), _screen.height());
       break;
     }
 

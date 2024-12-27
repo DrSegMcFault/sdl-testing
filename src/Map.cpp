@@ -33,6 +33,7 @@ Map::Map(
       _tiles[i * _num_columns + j] =
         Tile(
           i * Tile::size.w, j * Tile::size.h,
+          { rand() % (_tileset.texture.width / _tile_width_px), 0, _tile_width_px, _tile_height_px },
           (rand() % 4) * 90,
           static_cast<SDL_RendererFlip>(rand() % 3));
     }
@@ -52,23 +53,17 @@ Map::Map(
  *****************************************************************************/
 void Map::draw(Screen& screen, Camera& c)
 {
-  SDL_Rect camera_rect = c.getRect();
   SDL_Rect dest;
-  SDL_Rect temp;
   int visible_tiles = 0;
 
-  for (const auto i : range(_num_tiles)) {
-    auto& tile = _tiles[i];
+  for (const auto& tile : _tiles) {
     dest = c.toRect(tile.pos, tile.size);
-
-    // if this tile is not within the view of the 
-    // camera, dont render it
-    if (!SDL_IntersectRect(&dest, &camera_rect, &temp)) {
+    if (SDL_RectEmpty(&dest)) {
       continue;
     }
     visible_tiles++;
 
-    _tileset.source.x = tile.source.x;
+    _tileset.source = tile.source;
     _tileset.rotation_deg = tile.angle;
     _tileset.flip = tile.flip;
 
