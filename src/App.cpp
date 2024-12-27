@@ -32,15 +32,6 @@ bool App::initialize()
   _camera._world_pos = { 0, 0 };
   _camera._screen_height_px = _screen.height();
   _camera._screen_width_px = _screen.width();
-
-  // only take up half the screen
-  _camera._view_height_factor = 1.f;
-  _camera._view_width_factor = 1.f;
-
-  // move the camera over by half the width of the window
-  _camera._view_offset_x_px = 0;
-  _camera._view_offset_y_px = 0;
-
   _camera.updateScreenSize(_camera._screen_width_px, _camera._screen_height_px);
 
   _camera_small = Camera();
@@ -48,15 +39,14 @@ bool App::initialize()
   _camera_small._screen_height_px = _screen.height();
   _camera_small._screen_width_px = _screen.width();
 
-  // only take up half the screen
+  // make the camera take up 20% of width and height 
   _camera_small._view_height_factor = .2f;
   _camera_small._view_width_factor = .2f;
 
-  // move the camera over by half the width of the window
+  // move the camera to the bottom right of the screen
   _camera_small._view_offset_x_px = _screen.width() * .8f;
   _camera_small._view_offset_y_px = _screen.height() * .8f;
   _camera_small._pixels_per_unit = 32.f;
-
   _camera_small.updateScreenSize(_camera._screen_width_px, _camera._screen_height_px);
 
   _player._pos = { 106.f, 49.f };
@@ -117,6 +107,7 @@ bool App::initialize()
       25);
 
   _camera.bindTo(_map._position, _map._size);
+  _camera_small.bindTo(_map._position, _map._size);
 
   return true;
 }
@@ -138,27 +129,24 @@ void App::gameLoop(uint32_t delta_t_ms)
   SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
   WorldPosition mouse_world = _camera.toWorld({ mouse_pos_x, mouse_pos_y });
 
+  // update states
   _player.update(delta_t_ms, mouse_world);
   _camera.centerOn(_player._pos, _player._size);
   _camera_small.centerOn(_player._pos, _player._size);
 
+  // render main camera
+  SDL_Rect cam1_rect = _camera.getRenderRect();
+  _screen.setViewPort(&cam1_rect);
   _map.draw(_screen, _camera);
-  auto r = _camera_small.getRect();
-  _screen.setDrawColor(0, 0, 0, 255);
-  
-   SDL_Rect bg = {
-    r.x - 1,
-    r.y - 1,
-    r.w + 1,
-    r.h + 1
-  };
-  SDL_RenderFillRect(_screen._renderer, &bg);
-  _screen.setDrawColor(255, 255, 255, 255);
-  SDL_RenderFillRect(_screen._renderer, &r);
-
-  _map.draw(_screen, _camera_small);
-
   _player.draw(_screen, _camera);
+
+  // draw 'window' of smaller camera
+  SDL_Rect cam2_rect = _camera_small.getRenderRect();
+  _screen.filledRectBackground(&cam2_rect, { 0, 0, 0, 255 }, { 255, 255, 255, 255 });
+
+  // render small camera
+  _screen.setViewPort(&cam2_rect);
+  _map.draw(_screen, _camera_small);
   _player.draw(_screen, _camera_small);
 
   if (cmdline::debug_camera) {
@@ -183,6 +171,7 @@ void App::processEvents(const SDL_Event& ev)
     {
       _screen.onWindowEvent(ev.window);
       _camera.updateScreenSize(_screen.width(), _screen.height());
+      _camera_small.updateScreenSize(_screen.width(), _screen.height());
       break;
     }
 

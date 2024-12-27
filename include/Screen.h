@@ -40,6 +40,42 @@ public:
 
   Texture makeTexture(const char* filepath);
 
+  // The SDL documentation does not say this,
+  // but after you call this, 0,0 is now the xy of the rect you passed here
+  void setViewPort(int x, int y, int w, int h) {
+    SDL_Rect r = {
+      x, y, w, h
+    };
+    SDL_RenderSetViewport(_renderer, &r);
+  }
+
+  // The SDL documentation does not say this,
+  // but after you call this, 0,0 is now the xy of the rect you passed here
+  void setViewPort(SDL_Rect* c) {
+    SDL_RenderSetViewport(_renderer, c);
+  }
+
+  void filledRect(SDL_Rect* r) {
+    SDL_RenderFillRect(_renderer, r);
+  }
+
+  void filledRectBackground(SDL_Rect* foreground, SDL_Color bg, SDL_Color fg) {
+    if (!foreground) {
+      return;
+    }
+    setDrawColor(bg.r, bg.g, bg.b, bg.a);
+    SDL_Rect background = {
+      foreground->x - 1,
+      foreground->y - 1,
+      foreground->w + 2,
+      foreground->h + 2
+    };
+    SDL_RenderFillRect(_renderer, &background);
+
+    setDrawColor(fg.r, fg.g, fg.b, fg.a);
+    SDL_RenderFillRect(_renderer, foreground);
+  }
+
   void copyout(Sprite& sprite, SDL_Rect* dest);
 
   void copyout(

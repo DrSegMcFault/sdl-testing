@@ -5,6 +5,10 @@
 
 #include "Util.h"
 
+// the Camera is always at pixel 0,0
+// any relative positioning of this camera within the
+// window is done via setting the view port
+// prior to any draw calls using a Camera
 struct Camera {
   static constexpr SDL_Rect empty_rect = { 0, 0, 0, 0 };
   static constexpr float ZOOM_MAX = 40.f;
@@ -36,6 +40,16 @@ struct Camera {
   // pixels per world unit
   float _pixels_per_unit = 16.f;
 
+  // where the camera will be drawn on the screen
+  SDL_Rect getRenderRect() const {
+    return {
+      _view_offset_x_px,
+      _view_offset_y_px,
+      _view_width_px,
+      _view_height_px
+    };
+  }
+
   // get the effective rect of this camera
   SDL_Rect getRect() const {
     return toRect(_world_pos, _world_size);
@@ -46,6 +60,8 @@ struct Camera {
     _screen_height_px = y_px;
     _view_width_px = static_cast<float>(_screen_width_px) * _view_width_factor;
     _view_height_px = static_cast<float>(_screen_height_px) * _view_height_factor;
+    _view_offset_x_px = (1.f - _view_width_factor) * _screen_width_px;
+    _view_offset_y_px = (1.f - _view_height_factor) * _screen_height_px;
     updateEffectiveSize();
   }
 
@@ -70,15 +86,18 @@ struct Camera {
 
   PixelPosition toPixel(WorldPosition pos) const {
     return {
-      static_cast<int>((pos.x - _world_pos.x) * _pixels_per_unit + _view_offset_x_px),
-      static_cast<int>((pos.y - _world_pos.y) * _pixels_per_unit + _view_offset_y_px)
+      static_cast<int>((pos.x - _world_pos.x) * _pixels_per_unit),
+      static_cast<int>((pos.y - _world_pos.y) * _pixels_per_unit)
     };
   }
 
+  // TODO: check for intersection here. if no intersection
+  // return empty rect. otherwise return what is already here
+  // need to make member var _world_rect so that this can be done efficiently
   SDL_Rect toRect(WorldPosition pos, WorldSize s) const {
     return {
-      static_cast<int>((pos.x - _world_pos.x) * _pixels_per_unit + _view_offset_x_px),
-      static_cast<int>((pos.y - _world_pos.y) * _pixels_per_unit + _view_offset_y_px),
+      static_cast<int>((pos.x - _world_pos.x) * _pixels_per_unit),
+      static_cast<int>((pos.y - _world_pos.y) * _pixels_per_unit),
       static_cast<int>(s.w * _pixels_per_unit),
       static_cast<int>(s.h * _pixels_per_unit)
     };
@@ -92,8 +111,8 @@ struct Camera {
   }
 
   WorldPosition toWorld(PixelPosition pixel) const {
-    float worldX = ((pixel.x - _view_offset_x_px) / _pixels_per_unit) + _world_pos.x;
-    float worldY = ((pixel.y - _view_offset_y_px) / _pixels_per_unit) + _world_pos.y;
+    float worldX = (pixel.x / _pixels_per_unit) + _world_pos.x;
+    float worldY = (pixel.y / _pixels_per_unit) + _world_pos.y;
     return { worldX, worldY };
   }
 

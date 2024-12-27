@@ -31,18 +31,10 @@ Map::Map(
   for (auto i : range(_num_rows)) {
     for (auto j : range(_num_columns)) {
       _tiles[i * _num_columns + j] =
-        // TODO: if i want to actually randomize these, i need to either have many more tiles
-        // that are already rotated, or handle the rotation fliping in the sampling stage of the
-        // sprite.
-        // SDL_FLip and angle make the draw() function appear to not function correctly
-        // Tile(
-        //   i * Tile::size.w, j * Tile::size.h,
-        //   (rand() % 4) * 90,
-        //   static_cast<SDL_RendererFlip>(rand() % 3));
         Tile(
           i * Tile::size.w, j * Tile::size.h,
-          0,
-          SDL_RendererFlip::SDL_FLIP_NONE);
+          (rand() % 4) * 90,
+          static_cast<SDL_RendererFlip>(rand() % 3));
     }
   }
 
@@ -80,55 +72,7 @@ void Map::draw(Screen& screen, Camera& c)
     _tileset.rotation_deg = tile.angle;
     _tileset.flip = tile.flip;
 
-    SDL_Rect intersect;
-    SDL_IntersectRect(&dest, &camera_rect, &intersect);
-    if (!SDL_RectEquals(&dest, &intersect))
-    {
-      // we need to source the sprite at the same ratio as intersect is to dest
-      // so that the view is propertly clipped
-
-      // if the destination rectangle for this tile is not
-      // entirely within the camera bounds
-      // what is intercecton as a percentage of dest?
-      // dest is guaranteed to be larger than intersection
-      float offset_percentage_x = float(float(intersect.w) / float(dest.w)) * 100.f;
-      float offset_percentage_y = float(float(intersect.h) / float(dest.h)) * 100.f;
-
-      auto offset_x = _tile_width_px - (_tile_width_px * (offset_percentage_x / 100.f));
-      auto offset_y = _tile_height_px - (_tile_height_px * (offset_percentage_y / 100.f));
-      if (intersect.x != dest.x) {
-        _tileset.source.x += offset_x;
-      }
-      if (intersect.y != dest.y) {
-        _tileset.source.y += offset_y;
-      }
-
-      _tileset.source.w = _tileset.source.w - offset_x;
-      _tileset.source.h = _tileset.source.h - offset_y;
-
-      if (cmdline::debug_camera && cmdline::debug_tiles) {
-        screen.setDrawColor(0, 0, 0, 255);
-        SDL_Rect bg = {
-          dest.x - 1,
-          dest.y - 1,
-          dest.w + 1,
-          dest.h + 1
-        };
-        SDL_RenderFillRect(screen._renderer, &bg);
-        screen.setDrawColor(0, 0, 255, 255);
-        SDL_RenderFillRect(screen._renderer, &dest);
-
-        if (intersect.x == dest.x && intersect.y == dest.y) {
-          screen.setDrawColor(0, 255, 255, 255);
-          SDL_RenderFillRect(screen._renderer, &dest);
-        }
-      }
-    }
-
-    screen.copyout(_tileset, &intersect);
-    // TODO: clean this up later
-    _tileset.source.w = _tile_width_px;
-    _tileset.source.h = _tile_height_px;
+    screen.copyout(_tileset, &dest);
   }
 
   if (cmdline::debug_tiles) {
