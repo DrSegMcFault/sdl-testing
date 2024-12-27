@@ -135,8 +135,7 @@ void App::gameLoop(uint32_t delta_t_ms)
   _camera_small.centerOn(_player._pos, _player._size);
 
   // render main camera
-  SDL_Rect cam1_rect = _camera.getRenderRect();
-  _screen.setViewPort(&cam1_rect);
+  _screen.setViewPort(_camera.getRenderRect());
   _map.draw(_screen, _camera);
   _player.draw(_screen, _camera);
 
@@ -148,11 +147,11 @@ void App::gameLoop(uint32_t delta_t_ms)
   }
 
   // draw 'window' of smaller camera
-  SDL_Rect cam2_rect = _camera_small.getRenderRect();
-  _screen.filledRectBackground(&cam2_rect, { 0, 0, 0, 255 }, { 255, 255, 255, 255 });
+  const SDL_Rect* cam2_rect = _camera_small.getRenderRect();
+  _screen.filledRectBackground(cam2_rect, { 0, 0, 0, 255 }, { 255, 255, 255, 255 });
 
   // render small camera
-  _screen.setViewPort(&cam2_rect);
+  _screen.setViewPort(cam2_rect);
   _map.draw(_screen, _camera_small);
   _player.draw(_screen, _camera_small);
 

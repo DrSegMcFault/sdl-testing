@@ -53,17 +53,13 @@ Map::Map(
  *****************************************************************************/
 void Map::draw(Screen& screen, Camera& c)
 {
-  SDL_Rect camera_rect = c.getRect();
   SDL_Rect dest;
   int visible_tiles = 0;
 
   for (const auto i : range(_num_tiles)) {
     auto& tile = _tiles[i];
     dest = c.toRect(tile.pos, tile.size);
-
-    // if this tile is not within the view of the 
-    // camera, dont render it
-    if (!SDL_HasIntersection(&dest, &camera_rect)) {
+    if (SDL_RectEmpty(&dest)) {
       continue;
     }
     visible_tiles++;

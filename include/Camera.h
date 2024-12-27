@@ -32,36 +32,51 @@ struct Camera {
   int _view_offset_x_px = 0;
   int _view_offset_y_px = 0;
 
+  // where on the screen will the _output_rect be drawn
+  // this is the positioned output rect
+  // *items will NOT be drawn using this
+  // this is used to position the camera within the screen.
+  // and _output_rect is used to render items
+  // you could call this the clipping rect
+  SDL_Rect _render_rect = { 0, 0, 0, 0 };
+
   // position in the world
   WorldPosition _world_pos;
   // 'size' in the world - how many world units can the camera see
   WorldSize _world_size;
 
+  // SDL_Rect representation of the above;
+  // *note that x and y will always be zero
+  // and the width and height will be the same as
+  // the _render_rect width and height
+  // _output_rect can be thought of as a positionless box in which things will
+  // be drawn relative to
+  SDL_Rect _output_rect { 0, 0, 0, 0 };
+
   // pixels per world unit
   float _pixels_per_unit = 16.f;
 
   // where the camera will be drawn on the screen
-  SDL_Rect getRenderRect() const {
-    return {
-      _view_offset_x_px,
-      _view_offset_y_px,
-      _view_width_px,
-      _view_height_px
-    };
-  }
-
-  // get the effective rect of this camera
-  SDL_Rect getRect() const {
-    return toRect(_world_pos, _world_size);
+  const SDL_Rect* getRenderRect() const {
+    return &_render_rect;
   }
 
   void updateScreenSize(int x_px, int y_px) {
     _screen_width_px = x_px;
     _screen_height_px = y_px;
+
     _view_width_px = static_cast<float>(_screen_width_px) * _view_width_factor;
     _view_height_px = static_cast<float>(_screen_height_px) * _view_height_factor;
     _view_offset_x_px = (1.f - _view_width_factor) * _screen_width_px;
     _view_offset_y_px = (1.f - _view_height_factor) * _screen_height_px;
+
+    _render_rect = {
+      _view_offset_x_px,
+      _view_offset_y_px,
+      _view_width_px,
+      _view_height_px
+    };
+
     updateEffectiveSize();
   }
 
@@ -69,6 +84,10 @@ struct Camera {
     // update effective world size rect
     _world_size.w = _view_width_px / _pixels_per_unit;
     _world_size.h = _view_height_px / _pixels_per_unit;
+
+    // update actual pixel rect
+    _output_rect.w = static_cast<int>(_world_size.w * _pixels_per_unit);
+    _output_rect.h = static_cast<int>(_world_size.h * _pixels_per_unit);
   }
 
   // restrict the camera to an object
@@ -91,16 +110,14 @@ struct Camera {
     };
   }
 
-  // TODO: check for intersection here. if no intersection
-  // return empty rect. otherwise return what is already here
-  // need to make member var _world_rect so that this can be done efficiently
   SDL_Rect toRect(WorldPosition pos, WorldSize s) const {
-    return {
+    SDL_Rect incoming {
       static_cast<int>((pos.x - _world_pos.x) * _pixels_per_unit),
       static_cast<int>((pos.y - _world_pos.y) * _pixels_per_unit),
       static_cast<int>(s.w * _pixels_per_unit),
       static_cast<int>(s.h * _pixels_per_unit)
     };
+    return SDL_HasIntersection(&_output_rect, &incoming) ? incoming : empty_rect;
   }
 
   PixelSize toPixelSize(WorldSize s) const {
@@ -117,8 +134,8 @@ struct Camera {
   }
 
   void centerOn(WorldPosition p, WorldSize sz) {
-    _world_pos.x = (p.x + (sz.w / 2)) - (_world_size.w / 2);
-    _world_pos.y = (p.y + (sz.h / 2)) - (_world_size.h / 2);
+    _world_pos.x = (p.x + (sz.w / 2.f)) - (_world_size.w / 2.f);
+    _world_pos.y = (p.y + (sz.h / 2.f)) - (_world_size.h / 2.f);
 
     if (bounds) {
       // restrict the cameras position such that it's rect is fully contained within the bounds 

@@ -51,15 +51,15 @@ public:
 
   // The SDL documentation does not say this,
   // but after you call this, 0,0 is now the xy of the rect you passed here
-  void setViewPort(SDL_Rect* c) {
+  void setViewPort(const SDL_Rect* c) {
     SDL_RenderSetViewport(_renderer, c);
   }
 
-  void filledRect(SDL_Rect* r) {
+  void filledRect(const SDL_Rect* r) {
     SDL_RenderFillRect(_renderer, r);
   }
 
-  void filledRectBackground(SDL_Rect* foreground, SDL_Color bg, SDL_Color fg) {
+  void filledRectBackground(const SDL_Rect* foreground, SDL_Color bg, SDL_Color fg) {
     if (!foreground) {
       return;
     }
