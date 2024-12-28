@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <algorithm>
+
 #include <SDL2/SDL.h>
 
 #include "util/types.hpp"
@@ -23,14 +24,13 @@ struct ViewOffset {
 // prior to any draw calls using a Camera
 class Camera {
 public:
-
   Camera() = default;
   Camera(
    WorldPosition pos, 
    ViewOffset offsets = {});
 
   static constexpr SDL_Rect empty_rect = { 0, 0, 0, 0 };
-  static constexpr float ZOOM_MAX = 40.f; // maximum ppu (pixels per world unit)
+  static constexpr float ZOOM_MAX = 64.f; // maximum ppu (pixels per world unit)
   static constexpr float ZOOM_MIN = 8.f; // minimum ppu (pixels per world unit)
 
 private:
