@@ -1,10 +1,10 @@
-#include "App.h"
+#include "App.hpp"
 
 #include <chrono>
 #include <cmath>
 #include <format>
 
-#include "cmdline.h"
+#include "cmdline.hpp"
 
 /******************************************************************************
  *
@@ -28,26 +28,23 @@ bool App::initialize()
     return false;
   }
 
-  _camera = Camera();
-  _camera._world_pos = { 0, 0 };
-  _camera._screen_height_px = _screen.height();
-  _camera._screen_width_px = _screen.width();
-  _camera.updateScreenSize(_camera._screen_width_px, _camera._screen_height_px);
+  _camera = 
+    Camera(WorldPosition { 0, 0 });
+  _camera.updateScreenSize(_screen.width(), _screen.height());
 
-  _camera_small = Camera();
-  _camera_small._world_pos = { 0, 0 };
-  _camera_small._screen_height_px = _screen.height();
-  _camera_small._screen_width_px = _screen.width();
+  _camera_small = 
+    Camera(
+      WorldPosition { 0, 0 },
+      ViewOffset {
+        .x_px = static_cast<int>(_screen.width() * .8f),
+        .y_px = static_cast<int>(_screen.height() * .8f),
+        .width_factor = .2f,
+        .height_factor = .2f
+      }
+    );
 
-  // make the camera take up 20% of width and height 
-  _camera_small._view_height_factor = .2f;
-  _camera_small._view_width_factor = .2f;
-
-  // move the camera to the bottom right of the screen
-  _camera_small._view_offset_x_px = _screen.width() * .8f;
-  _camera_small._view_offset_y_px = _screen.height() * .8f;
-  _camera_small._pixels_per_unit = 32.f;
-  _camera_small.updateScreenSize(_camera._screen_width_px, _camera._screen_height_px);
+  _camera_small.setZoom(32.f);
+  _camera_small.updateScreenSize(_screen.width(), _screen.height());
 
   _player._pos = { 106.f, 49.f };
   _player._is_animated = true;
@@ -106,8 +103,8 @@ bool App::initialize()
       25,
       25);
 
-  _camera.bindTo(_map._position, _map._size);
-  _camera_small.bindTo(_map._position, _map._size);
+  _camera.bounds = { _map._position, _map._size };
+  _camera_small.bounds = { _map._position, _map._size };
 
   return true;
 }
@@ -140,9 +137,10 @@ void App::gameLoop(uint32_t delta_t_ms)
   _player.draw(_screen, _camera);
 
   if (cmdline::debug_camera) {
+    auto pos = _camera.getPosition();
     _screen.addText("Camera");
-    _screen.addText("      world x, y: {}, {}", round(_camera._world_pos.x), round(_camera._world_pos.y));
-    _screen.addText("      pixels_per_unit: {}", _camera._pixels_per_unit);
+    _screen.addText("      world x, y: {}, {}", round(pos.x), round(pos.y));
+    _screen.addText("      pixels_per_unit: {}", _camera.getZoomLevel());
     _screen.addTextln();
   }
 

@@ -1,5 +1,5 @@
-#include "cmdline.h"
-#include "App.h"
+#include "cmdline.hpp"
+#include "App.hpp"
 
 int main(int argc, char* argv[]) {
   parseCommandLine(argc, argv);

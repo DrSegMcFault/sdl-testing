@@ -1,10 +1,11 @@
-#include "Map.h"
+#include "Map.hpp"
 #include <random>
 #include <cstdlib>
 #include <chrono>
 
-#include "Util.h"
-#include "cmdline.h"
+#include "util/types.hpp"
+#include "util/util.hpp"
+#include "cmdline.hpp"
 
 /******************************************************************************
  *
@@ -28,8 +29,8 @@ Map::Map(
   auto now = std::chrono::steady_clock::now().time_since_epoch().count();
   srand(static_cast<unsigned int>(now));
 
-  for (auto i : range(_num_rows)) {
-    for (auto j : range(_num_columns)) {
+  for (auto i : util::range(_num_rows)) {
+    for (auto j : util::range(_num_columns)) {
       _tiles[i * _num_columns + j] =
         Tile(
           i * Tile::size.w, j * Tile::size.h,

@@ -5,7 +5,7 @@
 
 #include <SDL_ttf.h>
 
-#include "Sprite.h"
+#include "Sprite.hpp"
 
 class Screen {
 private:

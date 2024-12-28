@@ -14,6 +14,7 @@ find_package(SDL2 CONFIG REQUIRED)
 find_package(SDL2_mixer CONFIG REQUIRED)
 find_package(SDL2_image CONFIG REQUIRED)
 find_package(SDL2_ttf CONFIG REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME})
 
@@ -28,6 +29,7 @@ target_link_libraries(${PROJECT_NAME}
  $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
  $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
  CLI11::CLI11)
+target_link_libraries(${PROJECT_NAME} PRIVATE EnTT::EnTT)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static>)
 target_link_libraries(${PROJECT_NAME} PRIVATE $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>)

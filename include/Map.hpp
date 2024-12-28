@@ -4,9 +4,9 @@
 
 #include <SDL2/SDL.h>
 
-#include "Sprite.h"
-#include "Camera.h"
-#include "Screen.h"
+#include "Sprite.hpp"
+#include "Camera.hpp"
+#include "Screen.hpp"
 
 struct Tile {
   static constexpr WorldSize size = { 15.f, 15.f };

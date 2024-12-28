@@ -1,9 +1,9 @@
-#include "Player.h"
+#include "Player.hpp"
 
 #include <numbers>
 #include <cmath>
 
-#include "cmdline.h"
+#include "cmdline.hpp"
 
 /******************************************************************************
  *

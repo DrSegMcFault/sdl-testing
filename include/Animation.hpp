@@ -4,8 +4,8 @@
 #include <array>
 #include <SDL2/SDL.h>
 
-#include "Sprite.h"
-#include "Util.h"
+#include "Sprite.hpp"
+#include "util/types.hpp"
 
 struct Animation {
   Animation() = default;

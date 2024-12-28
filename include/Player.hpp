@@ -2,11 +2,11 @@
 
 #include <SDL2/SDL.h>
 
-#include "Util.h"
-#include "Animation.h"
-#include "Camera.h"
-#include "Sprite.h"
-#include "Screen.h"
+#include "util/types.hpp"
+#include "Animation.hpp"
+#include "Camera.hpp"
+#include "Sprite.hpp"
+#include "Screen.hpp"
 
 // what is the player doing
 enum Action {

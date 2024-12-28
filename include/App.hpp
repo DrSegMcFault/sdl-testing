@@ -2,11 +2,11 @@
 
 #include <SDL2/SDL.h>
 
-#include "Player.h"
-#include "Screen.h"
-#include "Texture.h"
-#include "Camera.h"
-#include "Map.h"
+#include "Player.hpp"
+#include "Screen.hpp"
+#include "Texture.hpp"
+#include "Camera.hpp"
+#include "Map.hpp"
 
 class App
 {

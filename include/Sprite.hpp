@@ -2,7 +2,7 @@
 
 #include <SDL2/SDL.h>
 
-#include "Texture.h"
+#include "Texture.hpp"
 
 // an image to be rendered on the screen
 // source is by default the same size as the texture,
